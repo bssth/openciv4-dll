@@ -57,7 +57,9 @@ function(oc4_add_game_core target)
 	if(NOT MSVC)
 		# VC7.1-era code: Microsoft extensions, and the SDK's Windows-1252 sources as raw bytes.
 		# Non-POD varargs stays an error: clang compiles it to a trap (brk), not MSVC's silent pass-through.
-		target_compile_options(${target} PRIVATE -fms-extensions -ferror-limit=0 -Wno-everything -ffp-contract=off -Werror=non-pod-varargs)
+		# -fsigned-char: the SDK stores enums in plain char fields (CvPlot::m_eOwner and others) with -1 for
+		# none, as MSVC's char is signed. ARM ELF targets (Linux on ARM64, the Switch) make plain char unsigned.
+		target_compile_options(${target} PRIVATE -fms-extensions -ferror-limit=0 -Wno-everything -ffp-contract=off -Werror=non-pod-varargs -fsigned-char)
 	endif()
 	target_precompile_headers(${target} PRIVATE "${src}/CvGameCoreDLL.h")
 	set_source_files_properties("${compat}/oc4_boost_python.cpp" TARGET_DIRECTORY ${target} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
