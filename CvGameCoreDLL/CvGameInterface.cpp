@@ -1965,7 +1965,7 @@ void CvGame::startFlyoutMenu(const CvPlot* pPlot, std::vector<CvFlyoutMenuData>&
 
 			aFlyoutItems.push_back(CvFlyoutMenuData(NO_FLYOUT, -1, -1, -1, L""));
 
-			int iI; for (iI = 0; iI < GC.getNumHurryInfos(); iI++)
+			for (int iI = 0; iI < GC.getNumHurryInfos(); iI++)
 			{
 				if (pCity->canHurry((HurryTypes)iI))
 				{

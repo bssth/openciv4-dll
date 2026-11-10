@@ -12,7 +12,7 @@ Results, problems and improvements to this prompt: <https://github.com/bssth/ope
 ## Before you start
 
 * Do sections 1 and 2 of the guide yourself, or check that the agent did: the sources in git
-  with an **unmodified first commit**, this repository next to them, Python 2.7 and pybind11
+  with an **unmodified first commit**, this repository next to them with submodules initialised recursively, Python 2.7
   in place, the engine folder and the game installed.
 * Give the agent the paths. Tell it what it may run (the build, the engine) and what it must
   not touch (the game install, the original mod folder).

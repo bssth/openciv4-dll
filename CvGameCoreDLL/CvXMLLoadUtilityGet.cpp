@@ -22,13 +22,13 @@ int CvXMLLoadUtility::GetNumProgressSteps()
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetXmlVal(char* pszVal, char* pszDefault = NULL)
+//  FUNCTION:   GetXmlVal(char* pszVal, const char* pszDefault = NULL)
 //
 //  PURPOSE :   Get the string value of the current xml node or the next non-comment xml node if the
 //				current node is a comment node
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetXmlVal(char* pszVal, char* pszDefault)
+bool CvXMLLoadUtility::GetXmlVal(char* pszVal, const char* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -56,13 +56,13 @@ bool CvXMLLoadUtility::GetXmlVal(char* pszVal, char* pszDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetXmlVal(wchar* pszVal, wchar* pszDefault = NULL)
+//  FUNCTION:   GetXmlVal(wchar* pszVal, const wchar* pszDefault = NULL)
 //
 //  PURPOSE :   Get the string value of the current xml node or the next non-comment xml node if the
 //				current node is a comment node
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetXmlVal(wchar* pszVal, wchar* pszDefault)
+bool CvXMLLoadUtility::GetXmlVal(wchar* pszVal, const wchar* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -90,13 +90,13 @@ bool CvXMLLoadUtility::GetXmlVal(wchar* pszVal, wchar* pszDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetXmlVal(std::string& pszVal, char* pszDefault = NULL)
+//  FUNCTION:   GetXmlVal(std::string& pszVal, const char* pszDefault = NULL)
 //
 //  PURPOSE :   Get the string value of the current xml node or the next non-comment xml node if the
 //				current node is a comment node
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetXmlVal(std::string& pszVal, char* pszDefault)
+bool CvXMLLoadUtility::GetXmlVal(std::string& pszVal, const char* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -125,13 +125,13 @@ bool CvXMLLoadUtility::GetXmlVal(std::string& pszVal, char* pszDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetXmlVal(std::wstring& pszVal, wchar* pszDefault = NULL)
+//  FUNCTION:   GetXmlVal(std::wstring& pszVal, const wchar* pszDefault = NULL)
 //
 //  PURPOSE :   Get the string value of the current xml node or the next non-comment xml node if the
 //				current node is a comment node
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetXmlVal(std::wstring& pszVal, wchar* pszDefault)
+bool CvXMLLoadUtility::GetXmlVal(std::wstring& pszVal, const wchar* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -244,13 +244,13 @@ bool CvXMLLoadUtility::GetXmlVal(bool* pbVal, bool bDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetNextXmlVal(std::string& pszVal, char* pszDefault = NULL)
+//  FUNCTION:   GetNextXmlVal(std::string& pszVal, const char* pszDefault = NULL)
 //
 //  PURPOSE :   Get the string value of the next sibling of the current xml node or the next 
 //				non-comment xml node if the current node is a comment node
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetNextXmlVal(std::string& pszVal, char* pszDefault)
+bool CvXMLLoadUtility::GetNextXmlVal(std::string& pszVal, const char* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -287,13 +287,13 @@ bool CvXMLLoadUtility::GetNextXmlVal(std::string& pszVal, char* pszDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetNextXmlVal(std::wstring& pszVal, wchar* pszDefault = NULL)
+//  FUNCTION:   GetNextXmlVal(std::wstring& pszVal, const wchar* pszDefault = NULL)
 //
 //  PURPOSE :   Get the string value of the next sibling of the current xml node or the next 
 //				non-comment xml node if the current node is a comment node
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetNextXmlVal(std::wstring& pszVal, wchar* pszDefault)
+bool CvXMLLoadUtility::GetNextXmlVal(std::wstring& pszVal, const wchar* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -330,13 +330,13 @@ bool CvXMLLoadUtility::GetNextXmlVal(std::wstring& pszVal, wchar* pszDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetNextXmlVal(char* pszVal, char* pszDefault = NULL)
+//  FUNCTION:   GetNextXmlVal(char* pszVal, const char* pszDefault = NULL)
 //
 //  PURPOSE :   Get the string value of the next sibling of the current xml node or the next 
 //				non-comment xml node if the current node is a comment node
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetNextXmlVal(char* pszVal, char* pszDefault)
+bool CvXMLLoadUtility::GetNextXmlVal(char* pszVal, const char* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -373,13 +373,13 @@ bool CvXMLLoadUtility::GetNextXmlVal(char* pszVal, char* pszDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetNextXmlVal(wchar* pszVal, wchar* pszDefault = NULL)
+//  FUNCTION:   GetNextXmlVal(wchar* pszVal, const wchar* pszDefault = NULL)
 //
 //  PURPOSE :   Get the string value of the next sibling of the current xml node or the next 
 //				non-comment xml node if the current node is a comment node
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetNextXmlVal(wchar* pszVal, wchar* pszDefault)
+bool CvXMLLoadUtility::GetNextXmlVal(wchar* pszVal, const wchar* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -527,13 +527,13 @@ bool CvXMLLoadUtility::GetNextXmlVal(bool* pbVal, bool bDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetChildXmlVal(std::string& pszVal, char* pszDefault = NULL)
+//  FUNCTION:   GetChildXmlVal(std::string& pszVal, const char* pszDefault = NULL)
 //
 //  PURPOSE :   overloaded function that sets the current xml node to it's first non-comment child node 
 //				and then that node's string value
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetChildXmlVal(std::string& pszVal, char* pszDefault)
+bool CvXMLLoadUtility::GetChildXmlVal(std::string& pszVal, const char* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -571,13 +571,13 @@ bool CvXMLLoadUtility::GetChildXmlVal(std::string& pszVal, char* pszDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetChildXmlVal(std::wstring& pszVal, wchar* pszDefault = NULL)
+//  FUNCTION:   GetChildXmlVal(std::wstring& pszVal, const wchar* pszDefault = NULL)
 //
 //  PURPOSE :   overloaded function that sets the current xml node to it's first non-comment child node 
 //				and then that node's string value
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetChildXmlVal(std::wstring& pszVal, wchar* pszDefault)
+bool CvXMLLoadUtility::GetChildXmlVal(std::wstring& pszVal, const wchar* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -616,13 +616,13 @@ bool CvXMLLoadUtility::GetChildXmlVal(std::wstring& pszVal, wchar* pszDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetChildXmlVal(char* pszVal, char* pszDefault = NULL)
+//  FUNCTION:   GetChildXmlVal(char* pszVal, const char* pszDefault = NULL)
 //
 //  PURPOSE :   overloaded function that sets the current xml node to it's first non-comment child node 
 //				and then that node's string value
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetChildXmlVal(char* pszVal, char* pszDefault)
+bool CvXMLLoadUtility::GetChildXmlVal(char* pszVal, const char* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -660,13 +660,13 @@ bool CvXMLLoadUtility::GetChildXmlVal(char* pszVal, char* pszDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetChildXmlVal(wchar* pszVal, wchar* pszDefault = NULL)
+//  FUNCTION:   GetChildXmlVal(wchar* pszVal, const wchar* pszDefault = NULL)
 //
 //  PURPOSE :   overloaded function that sets the current xml node to it's first non-comment child node 
 //				and then that node's string value
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetChildXmlVal(wchar* pszVal, wchar* pszDefault)
+bool CvXMLLoadUtility::GetChildXmlVal(wchar* pszVal, const wchar* pszDefault)
 {
 	if (pszDefault)
 	{
@@ -818,14 +818,14 @@ bool CvXMLLoadUtility::GetChildXmlVal(bool* pbVal, bool bDefault)
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetChildXmlValByName(wchar* pszVal, const TCHAR* szName, TCHAR* pszDefault = NULL)
+//  FUNCTION:   GetChildXmlValByName(wchar* pszVal, const TCHAR* szName, const TCHAR* pszDefault = NULL)
 //
 //  PURPOSE :   Overloaded function that gets the child value of the tag with szName if there is only one child
 // 				value of that name
 
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetChildXmlValByName(wchar* pszVal, const TCHAR* szName, wchar* pszDefault)
+bool CvXMLLoadUtility::GetChildXmlValByName(wchar* pszVal, const TCHAR* szName, const wchar* pszDefault)
 {
 	int iNumChildrenByTagName=1;
 
@@ -879,14 +879,14 @@ bool CvXMLLoadUtility::GetChildXmlValByName(wchar* pszVal, const TCHAR* szName, 
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetChildXmlValByName(char* pszVal, const TCHAR* szName, TCHAR* pszDefault = NULL)
+//  FUNCTION:   GetChildXmlValByName(char* pszVal, const TCHAR* szName, const TCHAR* pszDefault = NULL)
 //
 //  PURPOSE :   Overloaded function that gets the child value of the tag with szName if there is only one child
 // 				value of that name
 
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetChildXmlValByName(char* pszVal, const TCHAR* szName, char* pszDefault)
+bool CvXMLLoadUtility::GetChildXmlValByName(char* pszVal, const TCHAR* szName, const char* pszDefault)
 {
 	int iNumChildrenByTagName=1;
 
@@ -941,14 +941,14 @@ bool CvXMLLoadUtility::GetChildXmlValByName(char* pszVal, const TCHAR* szName, c
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   GetChildXmlValByName(std::string& pszVal, const TCHAR* szName, TCHAR* pszDefault = NULL)
+//  FUNCTION:   GetChildXmlValByName(std::string& pszVal, const TCHAR* szName, const TCHAR* pszDefault = NULL)
 //
 //  PURPOSE :   Overloaded function that gets the child value of the tag with szName if there is only one child
 // 				value of that name
 
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetChildXmlValByName(std::string& pszVal, const TCHAR* szName, char* pszDefault)
+bool CvXMLLoadUtility::GetChildXmlValByName(std::string& pszVal, const TCHAR* szName, const char* pszDefault)
 {
 	int iNumChildrenByTagName=1;
 
@@ -1002,7 +1002,7 @@ bool CvXMLLoadUtility::GetChildXmlValByName(std::string& pszVal, const TCHAR* sz
 
 //
 //------------------------------------------------------------------------------------------------------
-bool CvXMLLoadUtility::GetChildXmlValByName(std::wstring& pszVal, const TCHAR* szName, wchar* pszDefault)
+bool CvXMLLoadUtility::GetChildXmlValByName(std::wstring& pszVal, const TCHAR* szName, const wchar* pszDefault)
 {
 	int iNumChildrenByTagName=1;
 

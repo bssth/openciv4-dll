@@ -84,12 +84,12 @@ public:
 	// overloaded function that gets the child value of the tag with szName if there is only one child
 	// value of that name
 	DllExport void MapChildren();	// call this before GetChildXMLValByName to use fast searching
-	DllExport bool GetChildXmlValByName(std::string& pszVal, const TCHAR* szName, char* pszDefault = NULL);
-	DllExport bool GetChildXmlValByName(std::wstring& pszVal, const TCHAR* szName, wchar* pszDefault = NULL);
+	DllExport bool GetChildXmlValByName(std::string& pszVal, const TCHAR* szName, const char* pszDefault = NULL);
+	DllExport bool GetChildXmlValByName(std::wstring& pszVal, const TCHAR* szName, const wchar* pszDefault = NULL);
 	// overloaded function that gets the child value of the tag with szName if there is only one child
 	// value of that name
-	DllExport bool GetChildXmlValByName(char* pszVal, const TCHAR* szName, char* pszDefault = NULL);
-	DllExport bool GetChildXmlValByName(wchar* pszVal, const TCHAR* szName, wchar* pszDefault = NULL);
+	DllExport bool GetChildXmlValByName(char* pszVal, const TCHAR* szName, const char* pszDefault = NULL);
+	DllExport bool GetChildXmlValByName(wchar* pszVal, const TCHAR* szName, const wchar* pszDefault = NULL);
 	// overloaded function that gets the child value of the tag with szName if there is only one child
 	// value of that name
 	DllExport bool GetChildXmlValByName(int* piVal, const TCHAR* szName, int iDefault = 0);
@@ -106,12 +106,12 @@ public:
 
 	// overloaded function that gets either the current xml node's or the next non-comment xml node's string value
 	// depending on if the current node is a non-comment node or not
-	bool GetXmlVal(std::wstring& pszVal, wchar* pszDefault = NULL);
-	bool GetXmlVal(std::string& pszVal, char* pszDefault = NULL);
+	bool GetXmlVal(std::wstring& pszVal, const wchar* pszDefault = NULL);
+	bool GetXmlVal(std::string& pszVal, const char* pszDefault = NULL);
 	// overloaded function that gets either the current xml node's or the next non-comment xml node's string value
 	// depending on if the current node is a non-comment node or not
-	bool GetXmlVal(wchar* pszVal, wchar* pszDefault = NULL);
-	bool GetXmlVal(char* pszVal, char* pszDefault = NULL);
+	bool GetXmlVal(wchar* pszVal, const wchar* pszDefault = NULL);
+	bool GetXmlVal(char* pszVal, const char* pszDefault = NULL);
 	// overloaded function that gets either the current xml node's or the next non-comment xml node's int value
 	// depending on if the current node is a non-comment node or not
 	bool GetXmlVal(int* piVal, int iDefault = 0);
@@ -124,12 +124,12 @@ public:
 
 	// overloaded function that sets the current xml node to it's next sibling and then
 	//	gets the next non-comment xml node's string value
-	bool GetNextXmlVal(std::string& pszVal, char* pszDefault = NULL);
-	bool GetNextXmlVal(std::wstring& pszVal, wchar* pszDefault = NULL);
+	bool GetNextXmlVal(std::string& pszVal, const char* pszDefault = NULL);
+	bool GetNextXmlVal(std::wstring& pszVal, const wchar* pszDefault = NULL);
 	// overloaded function that sets the current xml node to it's next sibling and then
 	//	gets the next non-comment xml node's string value
-	bool GetNextXmlVal(char* pszVal, char* pszDefault = NULL);
-	bool GetNextXmlVal(wchar* pszVal, wchar* pszDefault = NULL);
+	bool GetNextXmlVal(char* pszVal, const char* pszDefault = NULL);
+	bool GetNextXmlVal(wchar* pszVal, const wchar* pszDefault = NULL);
 	// overloaded function that sets the current xml node to it's next sibling and then
 	//	gets the next non-comment xml node's int value
 	bool GetNextXmlVal(int* piVal, int iDefault = 0);
@@ -142,12 +142,12 @@ public:
 
 	// overloaded function that sets the current xml node to it's first non-comment child node
 	//	and then gets that node's string value
-	bool GetChildXmlVal(std::string& pszVal, char* pszDefault = NULL);
-	bool GetChildXmlVal(std::wstring& pszVal, wchar* pszDefault = NULL);
+	bool GetChildXmlVal(std::string& pszVal, const char* pszDefault = NULL);
+	bool GetChildXmlVal(std::wstring& pszVal, const wchar* pszDefault = NULL);
 	// overloaded function that sets the current xml node to it's first non-comment child node
 	//	and then gets that node's string value
-	bool GetChildXmlVal(char* pszVal, char* pszDefault = NULL);
-	bool GetChildXmlVal(wchar* pszVal, wchar* pszDefault = NULL);
+	bool GetChildXmlVal(char* pszVal, const char* pszDefault = NULL);
+	bool GetChildXmlVal(wchar* pszVal, const wchar* pszDefault = NULL);
 	// overloaded function that sets the current xml node to it's first non-comment child node
 	//	and then gets that node's integer value
 	bool GetChildXmlVal(int* piVal, int iDefault = 0);
@@ -262,13 +262,13 @@ private:
 	void UpdateProgressCB(const char* szMessage=NULL);
 
 	// take a character string of hex values and return their unsigned int value
-	void MakeMaskFromString(unsigned int *puiMask, char* szMask);
+	void MakeMaskFromString(unsigned int *puiMask, const char* szMask);
 
 	// find the tag name in the xml file and set the string parameter and num val parameter based on it's value
-	void SetGlobalStringArray(CvString** ppszString, char* szTagName, int* iNumVals, bool bUseEnum=false);
+	void SetGlobalStringArray(CvString** ppszString, const char* szTagName, int* iNumVals, bool bUseEnum=false);
 	void SetDiplomacyCommentTypes(CvString** ppszString, int* iNumVals);	// sets diplomacy comments
 
-	void SetGlobalUnitScales(float* pfLargeScale, float* pfSmallScale, char* szTagName);
+	void SetGlobalUnitScales(float* pfLargeScale, float* pfSmallScale, const char* szTagName);
 
 #ifdef _USRDLL
 	template <class T>
@@ -292,14 +292,14 @@ private:
 	// special cases of set class info which don't use the template because of extra code they have
 	//
 	void SetGlobalActionInfo();
-	void SetGlobalAnimationPathInfo(CvAnimationPathInfo** ppAnimationPathInfo, char* szTagName, int* iNumVals);
+	void SetGlobalAnimationPathInfo(CvAnimationPathInfo** ppAnimationPathInfo, const char* szTagName, int* iNumVals);
 	void SetGameText(const char* szTextGroup, const char* szTagName);
 
 	// create a keyboard string from a KB code, Delete would be returned for KB_DELETE
 	CvWString CreateKeyStringFromKBCode(const TCHAR* pszHotKey);
 
 	void orderHotkeyInfo(int** ppiSortedIndex, int* pHotkeyIndex, int iLength);
-	void logMsg(char* format, ... );
+	void logMsg(const char* format, ... );
 };
 
 #ifdef _USRDLL

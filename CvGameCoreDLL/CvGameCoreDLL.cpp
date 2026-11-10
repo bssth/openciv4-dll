@@ -51,22 +51,22 @@ void operator delete[](void* pvMem)
 	}
 }
 
-void *__cdecl operator new(size_t size, char* pcFile, int iLine)
+void *__cdecl operator new(size_t size, const char* pcFile, int iLine)
 {
 	return gDLL->newMem(size, pcFile, iLine);
 }
 
-void *__cdecl operator new[](size_t size, char* pcFile, int iLine)
+void *__cdecl operator new[](size_t size, const char* pcFile, int iLine)
 {
 	return gDLL->newMem(size, pcFile, iLine);
 }
 
-void __cdecl operator delete(void* pvMem, char* pcFile, int iLine)
+void __cdecl operator delete(void* pvMem, const char* pcFile, int iLine)
 {
 	gDLL->delMem(pvMem, pcFile, iLine);
 }
 
-void __cdecl operator delete[](void* pvMem, char* pcFile, int iLine)
+void __cdecl operator delete[](void* pvMem, const char* pcFile, int iLine)
 {
 	gDLL->delMem(pvMem, pcFile, iLine);
 }

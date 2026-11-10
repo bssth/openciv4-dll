@@ -26,10 +26,10 @@ public:
 	virtual bool LocateNode(FXml* xml, const TCHAR* pszXmlNode) = 0;
 	// locate the first sibling node in this sub-tree layer that has the xml tag name,
 	// returns true if a node is found and false otherwise
-	virtual bool LocateFirstSiblingNodeByTagName(FXml* xml, TCHAR* pszTagName) = 0;
+	virtual bool LocateFirstSiblingNodeByTagName(FXml* xml, const TCHAR* pszTagName) = 0;
 	// locate the next sibling node in this sub-tree layer that has the xml tag name,
 	// returns true if a node is found and false otherwise
-	virtual bool LocateNextSiblingNodeByTagName(FXml* xml, TCHAR* pszTagName) = 0;
+	virtual bool LocateNextSiblingNodeByTagName(FXml* xml, const TCHAR* pszTagName) = 0;
 	// Set the last located xml node member variable to the next sibling of the current
 	//	last located xml node, returns true if a next sibling was found and false otherwise
 	virtual bool NextSibling(FXml* xml) = 0;
@@ -46,19 +46,19 @@ public:
 	virtual bool SetToParent(FXml* xml) = 0;
 	// add a node to the document as the child of the last located node,
 	// returns true if the node was successfully added and false otherwise
-	virtual bool AddChildNode(FXml* xml, TCHAR* pszNewNode) = 0;
+	virtual bool AddChildNode(FXml* xml, const TCHAR* pszNewNode) = 0;
 	// adds a node to the document as a sibling to the last node located,
 	// node is added before the last node located,
 	// returns true if the node was successfully added and false otherwise
-	virtual bool AddSiblingNodeBefore(FXml* xml, TCHAR* pszNewNode) = 0;
+	virtual bool AddSiblingNodeBefore(FXml* xml, const TCHAR* pszNewNode) = 0;
 	// adds a node to the document as a sibling to the last node located,
 	// node is added after the last node located,
 	// returns true if the node was successfully added and false otherwise
-	virtual bool AddSiblingNodeAfter(FXml* xml, TCHAR* pszNewNode) = 0;
+	virtual bool AddSiblingNodeAfter(FXml* xml, const TCHAR* pszNewNode) = 0;
 	// write the xml document to disk, returns true if the write was successful and false otherwise
-	virtual bool WriteXml(FXml* xml, TCHAR* pszXmlFile) = 0;
+	virtual bool WriteXml(FXml* xml, const TCHAR* pszXmlFile) = 0;
 	// set the inserted node's attribute, returns true if successful and false otherwise
-	virtual bool SetInsertedNodeAttribute(FXml* xml, TCHAR* pszAttributeName, TCHAR* pszAttributeValue) = 0;
+	virtual bool SetInsertedNodeAttribute(FXml* xml, const TCHAR* pszAttributeName, const TCHAR* pszAttributeValue) = 0;
 	// get the size of the text from the last located node, returns the size
 	virtual int GetLastNodeTextSize(FXml* xml) = 0;
 	// get the text from the last located node, returns true if successful and false otherwise
@@ -82,9 +82,9 @@ public:
 	// get the text from the last inserted node, returns true if successful and false otherwise
 	virtual bool GetInsertedNodeText(FXml* xml, TCHAR* pszText) = 0;
 	// set the text from the last located node, returns true if successful and false otherwise
-	//bool SetLastNodeText(TCHAR* pszText);
+	//bool SetLastNodeText(const TCHAR* pszText);
 	// set the text from the last inserted node, returns true if successful and false otherwise
-	virtual bool SetInsertedNodeText(FXml* xml, TCHAR* pszText) = 0;
+	virtual bool SetInsertedNodeText(FXml* xml, const TCHAR* pszText) = 0;
 	// get the type of the last located node, returns true if there was a type set and false otherwise
 	virtual bool GetLastLocatedNodeType(FXml* xml, TCHAR* pszType) = 0;
 	// get the type of the last inserted node, returns true if there was a type set and false otherwise
@@ -92,7 +92,7 @@ public:
 	// Indicates if the last located node is a comment node or not, returns true if it is and false otherwise
 	virtual bool IsLastLocatedNodeCommentNode(FXml* xml) = 0;
 	// returns the number of elements that have the tag name
-	virtual int NumOfElementsByTagName(FXml* xml, TCHAR* pszTagName) = 0;
+	virtual int NumOfElementsByTagName(FXml* xml, const TCHAR* pszTagName) = 0;
 	// returns the number of children with the tag name
 	virtual int NumOfChildrenByTagName(FXml* xml, const TCHAR* pszTagName) = 0;
 	// returns the number of siblings the current selected item/node has

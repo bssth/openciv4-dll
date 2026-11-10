@@ -19277,7 +19277,7 @@ int CvQuestInfo::getNumQuestMessages() const
 
 const TCHAR* CvQuestInfo::getQuestMessages(int iIndex) const
 { 
-	return m_paszQuestMessages ? m_paszQuestMessages[iIndex] : "";
+	return m_paszQuestMessages ? m_paszQuestMessages[iIndex].c_str() : "";
 }
 
 int CvQuestInfo::getNumQuestLinks() const 
@@ -19302,7 +19302,7 @@ int CvQuestInfo::getNumQuestSounds() const
 
 const TCHAR* CvQuestInfo::getQuestSounds(int iIndex) const
 {
-	return m_paszQuestSounds ? m_paszQuestSounds[iIndex] : "";
+	return m_paszQuestSounds ? m_paszQuestSounds[iIndex].c_str() : "";
 }
 
 const TCHAR* CvQuestInfo::getQuestScript() const

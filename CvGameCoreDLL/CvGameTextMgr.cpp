@@ -3632,7 +3632,7 @@ void CvGameTextMgr::parseLeaderShortTraits(CvWStringBuffer &szHelpString, Leader
 	else
 	{
 		//	Random leader
-		szHelpString.append(CvWString("???/???"));
+		szHelpString.append(CvWString(R"(???/???)"));
 	}
 
 	//	return szHelpString;
@@ -14116,7 +14116,7 @@ void CvGameTextMgr::assignFontIds(int iFirstSymbolCode, int iPadAmount)
 	int iCurSymbolID = iFirstSymbolCode;
 
 	// set yield symbols
-	int i; for (i = 0; i < NUM_YIELD_TYPES; i++)
+	for (int i = 0; i < NUM_YIELD_TYPES; i++)
 	{
 		GC.getYieldInfo((YieldTypes) i).setChar(iCurSymbolID);  
 		++iCurSymbolID;
@@ -14147,7 +14147,7 @@ void CvGameTextMgr::assignFontIds(int iFirstSymbolCode, int iPadAmount)
 		} while (iCurSymbolID % iPadAmount != 0);
 	}
 
-	for (i = 0; i < GC.getNumReligionInfos(); i++)
+	for (int i = 0; i < GC.getNumReligionInfos(); i++)
 	{
 		GC.getReligionInfo((ReligionTypes) i).setChar(iCurSymbolID);
 		++iCurSymbolID;

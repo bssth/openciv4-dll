@@ -15,15 +15,17 @@ jobs:
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Cache Python 2.7 and pybind11
+      - name: Cache Python 2.7
         id: deps
         uses: actions/cache@v4
         with:
-          path: external
-          key: deps-python-2.7.18-pybind11-2.9.2
+          path: external/python27
+          key: deps-python-2.7.18-v2
 
-      - name: Fetch Python 2.7 and pybind11
+      - name: Fetch Python 2.7
         if: steps.deps.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
@@ -32,9 +34,6 @@ jobs:
           Start-Process msiexec.exe -Wait -ArgumentList '/a', "`"$PWD\external\python.msi`"", '/qn', "TARGETDIR=`"$PWD\external\python27`""
           Remove-Item external\python.msi
           if (-not (Test-Path external\python27\libs\python27.lib)) { throw "Python 2.7 did not unpack" }
-          Invoke-WebRequest https://github.com/pybind/pybind11/archive/refs/tags/v2.9.2.zip -OutFile external\pybind11.zip
-          Expand-Archive external\pybind11.zip external
-          Remove-Item external\pybind11.zip
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:

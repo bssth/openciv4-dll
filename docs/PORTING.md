@@ -82,8 +82,8 @@ cmake --build build --target CvGameCoreDLL_mod -- -k 0
 (it makes AI turns much faster). `-k 0` makes Ninja go on after errors, so one build lists
 every file that fails.
 
-What `oc4_add_game_core` sets up for the mod: C++20, the SDK's lenient conformance
-(`/permissive`), Windows-1252 as the source and execution character set,
+What `oc4_add_game_core` sets up for the mod: C++23, MSVC conformance options
+(`/permissive- /Zc:__cplusplus /Zc:preprocessor`), Windows-1252 as the source and execution character set,
 the SDK's legacy warnings off, `CvGameCoreDLL.h` as the precompiled header, `compat/` first on
 the include path (so `#include <boost/python.hpp>` and `<hash_map>` find the replacements),
 and Python 2.7 x64 with pybind11.
@@ -94,9 +94,33 @@ does not compile.
 
 ## 3. Compile errors
 
-The SDK was written for Visual C++ 7.1 (2003). A current compiler rejects some of it even in
-permissive mode. The changes below are the usual ones; all examples are from the SDK port in
-this repository, so you can find each in `git log -p CvGameCoreDLL`.
+The SDK was written for Visual C++ 7.1 (2003). The game core now uses `/permissive-` to
+catch non-standard C++ and `/Zc:preprocessor` for standard macro expansion and token
+pasting. Fixing these diagnostics reduces dependence on MSVC extensions and makes later
+Clang/GCC ports easier; these flags alone do not guarantee portability. `/Zc:__cplusplus`
+also makes `__cplusplus` reflect the selected language standard, so feature checks work
+correctly.
+
+Examples encountered in the SDK port:
+
+* **String literals passed to mutable pointers (C2664).** XML tag names, default strings,
+  logging formats and debug allocation filenames are read-only inputs: change `char*`
+  to `const char*` (and likewise for `TCHAR*` and `wchar*`) in both declarations and
+  definitions. Update interface overrides too. Keep buffers that receive text writable;
+  do not cast away constness to silence the error.
+* **Ambiguous conditional expressions (C2445).** `CvString` and `CvWString` convert both
+  to and from character pointers. For example, change
+  `m_pUnit ? m_pUnit->getName() : L""` to
+  `m_pUnit ? m_pUnit->getName().c_str() : L""` when returning a `std::wstring`.
+  The return value copies the text; do not retain a pointer into a temporary string.
+* **Invalid token pasting in art-info macros.** `CvArtInfo##name##*` and
+  `CvArtInfo##name##&` try to paste an identifier and punctuation into one token.
+  Use `CvArtInfo##name *` and `CvArtInfo##name &`: only the identifier needs pasting.
+  Macro parameters inside string literals do not expand either; use adjacent literals
+  and stringification, such as `"get" #name "ArtInfo"`, for a generated message.
+
+Keep the conformance flags enabled while fixing the mod. Further common changes follow;
+the SDK sources provide examples in `CvGameCoreDLL`.
 
 **Implementation details of the old standard library.** `std::list<T>::_Alloc::size_type`
 and similar names no longer exist. Use the type the code means:

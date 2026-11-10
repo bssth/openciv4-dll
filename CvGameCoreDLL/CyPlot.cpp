@@ -1027,7 +1027,7 @@ CyUnit* CyPlot::getUnit(int iIndex)
 
 std::string CyPlot::getScriptData() const
 {
-	return m_pPlot ? m_pPlot->getScriptData() : "";
+	return m_pPlot ? m_pPlot->getScriptData().c_str() : "";
 }
 
 void CyPlot::setScriptData(std::string szNewValue)

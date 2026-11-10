@@ -24,10 +24,18 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif()
 
 set(OC4_PYTHON27_DIR "${PROJECT_SOURCE_DIR}/external/python27" CACHE PATH "Python 2.7 x64 (include/, libs/python27.lib, python27.dll)")
-set(OC4_PYBIND11_DIR "${PROJECT_SOURCE_DIR}/external/pybind11-2.9.2" CACHE PATH "pybind11 2.9.x, the last series supporting Python 2.7")
+# Migrate the previous default in existing build trees; preserve custom overrides.
+if(OC4_PYBIND11_DIR STREQUAL "${PROJECT_SOURCE_DIR}/external/pybind11-2.9.2"
+	OR OC4_PYBIND11_DIR STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11")
+	unset(OC4_PYBIND11_DIR CACHE)
+endif()
+set(OC4_PYBIND11_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pybind11" CACHE PATH "Patched pybind11 2.9.2 (bundled submodule)")
 
-if(NOT EXISTS "${OC4_PYTHON27_DIR}/include/python2.7/Python.h" AND NOT EXISTS "${OC4_PYTHON27_DIR}/include/Python.h" OR NOT EXISTS "${OC4_PYBIND11_DIR}/include/pybind11/pybind11.h")
-	message(FATAL_ERROR "Python 2.7 / pybind11 not found: set OC4_PYTHON27_DIR and OC4_PYBIND11_DIR (see README)")
+if(NOT EXISTS "${OC4_PYTHON27_DIR}/include/python2.7/Python.h" AND NOT EXISTS "${OC4_PYTHON27_DIR}/include/Python.h")
+	message(FATAL_ERROR "Python 2.7 not found: set OC4_PYTHON27_DIR (see README)")
+endif()
+if(NOT EXISTS "${OC4_PYBIND11_DIR}/include/pybind11/pybind11.h")
+	message(FATAL_ERROR "pybind11 not found: run git submodule update --init --recursive from the repository root, or check OC4_PYBIND11_DIR")
 endif()
 
 add_library(oc4_python27 INTERFACE)

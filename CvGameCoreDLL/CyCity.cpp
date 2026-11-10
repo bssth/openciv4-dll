@@ -1754,12 +1754,12 @@ bool CyCity::getEspionageVisibility(int /*TeamTypes */eIndex)
 
 std::wstring CyCity::getName()
 {
-	return m_pCity ? m_pCity->getName() : L"";
+	return m_pCity ? m_pCity->getName().c_str() : L"";
 }
 
 std::wstring CyCity::getNameForm(int iForm)
 {
-	return m_pCity ? m_pCity->getName((uint)iForm) : L"";
+	return m_pCity ? m_pCity->getName((uint)iForm).c_str() : L"";
 }
 
 std::wstring CyCity::getNameKey()

@@ -23,7 +23,7 @@
 #define BUILD_INFO_MAP(map, infoArray, numInfos) \
 { \
 	int iI; \
-	for (iI = 0; iI < numInfos; iI++) \
+	for (iI = 0; iI < (numInfos); iI++) \
 	{ \
 		char temp[256];	\
 		sprintf(temp, "type = %s\n", infoArray(iI).getType()); \
@@ -37,7 +37,7 @@
 #define BUILD_INFO_MAP(map, infoArray, numInfos) \
 { \
 	int iI; \
-	for (iI = 0; iI < numInfos; iI++) \
+	for (iI = 0; iI < (numInfos); iI++) \
 	{ \
 	(map)[infoArray(iI).getTag()] = &infoArray(iI); \
 	} \
@@ -60,14 +60,14 @@ class Cv##name##ArtInfoItem : public CvArtFileMgr::ArtInfoItem \
 \
 static Cv##name##ArtInfoItem g##name##ArtInfoItem; \
 \
-CvArtInfo##name##* CvArtFileMgr::get##name##ArtInfo( const char *szArtDefineTag ) const \
+CvArtInfo##name * CvArtFileMgr::get##name##ArtInfo( const char *szArtDefineTag ) const \
 { \
 	FAssertMsg(szArtDefineTag, "NULL string on art info lookup?"); \
 	ArtInfo##name##MapType::const_iterator it = m_map##name##ArtInfos->find( szArtDefineTag );\
 	if ( it == m_map##name##ArtInfos->end() ) \
 	{\
 		char szErrorMsg[256]; \
-		sprintf(szErrorMsg, "get##name##ArtInfo: %s was not found", szArtDefineTag); \
+		sprintf(szErrorMsg, "ArtInfo: '%s' was not found", szArtDefineTag); \
 		FAssertMsg(false, szErrorMsg ); \
 		if ( 0 == strcmp(szArtDefineTag, "ERROR") ) \
 		{ \
@@ -89,7 +89,7 @@ void Cv##name##ArtInfoItem::deInit() \
 	} \
 	ARTFILEMGR.m_pa##name##ArtInfo.clear(); \
 } \
-CvArtInfo##name##& CvArtFileMgr::get##name##ArtInfo(int i) { return *(m_pa##name##ArtInfo[i]); }
+CvArtInfo##name & CvArtFileMgr::get##name##ArtInfo(int i) { return *(m_pa##name##ArtInfo[i]); }
 
 //----------------------------------------------------------------------------
 //

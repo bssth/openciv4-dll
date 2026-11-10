@@ -1,7 +1,7 @@
 #include "CvGameCoreDLL.h"
 #include"CvEnums.h"
 
-#include "CvGameCoreDLLUnDefNew.h"
+#include "CvGameCoreDLLUndefNew.h"
 # include <boost/python/enum.hpp>
 #include "CvGameCoreDLLDefNew.h"
 

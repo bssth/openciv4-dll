@@ -23,7 +23,7 @@ static const int kBufSize = 2048;
 //
 // for logging
 //
-void CvXMLLoadUtility::logMsg(char* format, ... )
+void CvXMLLoadUtility::logMsg(const char* format, ... )
 {
 	static char buf[kBufSize];
 	va_list args;	// openciv4: not x86's stack layout
@@ -124,13 +124,13 @@ void CvXMLLoadUtility::ResetGlobalEffectInfo()
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   MakeMaskFromString(unsigned int *puiMask, char* szMask)
+//  FUNCTION:   MakeMaskFromString(unsigned int *puiMask, const char* szMask)
 //
 //  PURPOSE :   takes a string of hex digits, 0-f and converts it into an unsigned integer
 //				mask value
 //
 //------------------------------------------------------------------------------------------------------
-void CvXMLLoadUtility::MakeMaskFromString(unsigned int *puiMask, char* szMask)
+void CvXMLLoadUtility::MakeMaskFromString(unsigned int *puiMask, const char* szMask)
 {
 	int i;	// loop counter
 

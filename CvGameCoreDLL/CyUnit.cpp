@@ -1526,12 +1526,12 @@ int CyUnit::getExtraDomainModifier(int /*DomainTypes*/ eIndex)
 
 std::wstring CyUnit::getName()
 {
-	return m_pUnit ? m_pUnit->getName() : L"";
+	return m_pUnit ? m_pUnit->getName().c_str() : L"";
 }
 
 std::wstring CyUnit::getNameForm(int iForm)
 {
-	return m_pUnit ? m_pUnit->getName((uint)iForm) : L"";
+	return m_pUnit ? m_pUnit->getName((uint)iForm).c_str() : L"";
 }
 
 std::wstring CyUnit::getNameKey()
@@ -1541,7 +1541,7 @@ std::wstring CyUnit::getNameKey()
 
 std::wstring CyUnit::getNameNoDesc()
 {
-	return m_pUnit ? m_pUnit->getNameNoDesc() : L"";
+	return m_pUnit ? m_pUnit->getNameNoDesc().c_str() : L"";
 }
 
 void CyUnit::setName(std::wstring szNewValue)

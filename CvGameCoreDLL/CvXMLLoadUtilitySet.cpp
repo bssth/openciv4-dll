@@ -785,14 +785,14 @@ bool CvXMLLoadUtility::LoadPostMenuGlobals()
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   SetGlobalStringArray(TCHAR (**ppszString)[256], char* szTagName, int* iNumVals)
+//  FUNCTION:   SetGlobalStringArray(TCHAR (**ppszString)[256], const char* szTagName, int* iNumVals)
 //
 //  PURPOSE :   takes the szTagName parameter and if it finds it in the m_pFXml member variable
 //				then it loads the ppszString parameter with the string values under it and the
 //				iNumVals with the total number of tags with the szTagName in the xml file
 //
 //------------------------------------------------------------------------------------------------------
-void CvXMLLoadUtility::SetGlobalStringArray(CvString **ppszString, char* szTagName, int* iNumVals, bool bUseEnum)
+void CvXMLLoadUtility::SetGlobalStringArray(CvString **ppszString, const char* szTagName, int* iNumVals, bool bUseEnum)
 {
 	PROFILE_FUNC();
 	logMsg("SetGlobalStringArray %s\n", szTagName);
@@ -1124,14 +1124,14 @@ void CvXMLLoadUtility::SetGlobalActionInfo()
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   SetGlobalAnimationPathInfo(CvAnimationPathInfo** ppAnimationPathInfo, char* szTagName, int* iNumVals)
+//  FUNCTION:   SetGlobalAnimationPathInfo(CvAnimationPathInfo** ppAnimationPathInfo, const char* szTagName, int* iNumVals)
 //
 //  PURPOSE :   Takes the szTagName parameter and if it exists in the xml it loads the ppAnimationPathInfo
 //				with the value under it and sets the value of the iNumVals parameter to the total number
 //				of occurances of the szTagName tag in the xml.
 //
 //------------------------------------------------------------------------------------------------------
-void CvXMLLoadUtility::SetGlobalAnimationPathInfo(CvAnimationPathInfo** ppAnimationPathInfo, char* szTagName, int* iNumVals)
+void CvXMLLoadUtility::SetGlobalAnimationPathInfo(CvAnimationPathInfo** ppAnimationPathInfo, const char* szTagName, int* iNumVals)
 {
 	PROFILE_FUNC();
 	logMsg( "SetGlobalAnimationPathInfo %s\n", szTagName );
@@ -1181,14 +1181,14 @@ void CvXMLLoadUtility::SetGlobalAnimationPathInfo(CvAnimationPathInfo** ppAnimat
 
 //------------------------------------------------------------------------------------------------------
 //
-//  FUNCTION:   SetGlobalUnitScales(float* pfLargeScale, float* pfSmallScale, char* szTagName)
+//  FUNCTION:   SetGlobalUnitScales(float* pfLargeScale, float* pfSmallScale, const char* szTagName)
 //
 //  PURPOSE :   Takes the szTagName parameter and if it exists in the xml it loads the ppPromotionInfo
 //				with the value under it and sets the value of the iNumVals parameter to the total number
 //				of occurances of the szTagName tag in the xml.
 //
 //------------------------------------------------------------------------------------------------------
-void CvXMLLoadUtility::SetGlobalUnitScales(float* pfLargeScale, float* pfSmallScale, char* szTagName)
+void CvXMLLoadUtility::SetGlobalUnitScales(float* pfLargeScale, float* pfSmallScale, const char* szTagName)
 {
 	PROFILE_FUNC();
 	logMsg("SetGlobalUnitScales %s\n", szTagName);

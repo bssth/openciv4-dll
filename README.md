@@ -38,12 +38,16 @@ changes step by step.
 ## Building
 
 Requirements: Windows x64, Visual Studio 2022 or newer with **Desktop development with C++**
-(CMake and Ninja come with it), and two third-party packages:
+(CMake and Ninja come with it), and Python 2.7:
 
 * Python 2.7.18 x64 from python.org, extracted without installing:
   `msiexec /a python-2.7.18.amd64.msi /qn TARGETDIR=%CD%\external\python27`
-* pybind11 2.9.2 (the last series that supports Python 2.7), its release source archive
-  unpacked to `external\pybind11-2.9.2`
+
+pybind11 is included as the `third_party/pybind11` submodule, pinned to the
+[Python 2.7-compatible fork fix](https://github.com/0x12A01DC/pybind11/commit/54ec6911f50353a866548a59c867290d674346e9)
+for MSVC 14.52 with `/permissive-`. Clone with `git clone --recursive`, or run
+`git submodule update --init --recursive` in an existing checkout. No manual archive
+download is needed.
 
 From an **x64 Native Tools Command Prompt**:
 
@@ -52,8 +56,9 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-The DLL is `build\bin\CvGameCoreDLL-x64.dll` (with its `.pdb`). Other locations of the packages:
-`-DOC4_PYTHON27_DIR=...` and `-DOC4_PYBIND11_DIR=...`. Link-time code generation is on by
+The DLL is `build\bin\CvGameCoreDLL-x64.dll` (with its `.pdb`). Another Python location: `-DOC4_PYTHON27_DIR=...`.
+`OC4_PYBIND11_DIR` can override the bundled headers if needed; an override must retain
+Python 2.7 support and the compiler fix. Link-time code generation is on by
 default (`-DOC4_LTO=OFF` to turn it off, for faster links while porting).
 
 A mod's DLL is built the same way, next to the vanilla one, into `build\mod\CvGameCoreDLL-x64.dll`,

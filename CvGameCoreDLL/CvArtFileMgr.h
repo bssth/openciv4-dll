@@ -44,18 +44,18 @@ class CvArtInfoInterface;
 #define ART_INFO_DECL(name) \
 public: \
 	friend class Cv##name##ArtInfoItem; \
-	DllExport CvArtInfo##name##* get##name##ArtInfo(const char *szArtDefineTag) const; \
+	DllExport CvArtInfo##name * get##name##ArtInfo(const char *szArtDefineTag) const; \
 	DllExport int getNum##name##ArtInfos() { return (int)m_pa##name##ArtInfo.size(); } \
-	DllExport std::vector<CvArtInfo##name##*>& get##name##ArtInfo() { return m_pa##name##ArtInfo; } \
-	DllExport CvArtInfo##name##& get##name##ArtInfo(int i); \
+	DllExport std::vector<CvArtInfo##name *>& get##name##ArtInfo() { return m_pa##name##ArtInfo; } \
+	DllExport CvArtInfo##name & get##name##ArtInfo(int i); \
 private: \
-	typedef std::map<const char* /* index */,CvArtInfo##name##* /*value */, ltstr> ArtInfo##name##MapType; \
+	typedef std::map<const char* /* index */,CvArtInfo##name* /*value */, ltstr> ArtInfo##name##MapType; \
 	ArtInfo##name##MapType* m_map##name##ArtInfos; \
-	std::vector<CvArtInfo##name##*> m_pa##name##ArtInfo; \
+	std::vector<CvArtInfo##name*> m_pa##name##ArtInfo; \
 
 class CvArtFileMgr
 {
-private:
+public:
 	class ArtInfoItem
 	{
 	public:
@@ -68,8 +68,8 @@ public:
 	// singleton accessor
 	DllExport static CvArtFileMgr& GetInstance();
 
-	DllExport CvArtFileMgr() {};
-	DllExport virtual ~CvArtFileMgr() {};
+	DllExport CvArtFileMgr() = default;
+	DllExport virtual ~CvArtFileMgr() = default;
 
 	DllExport void Init();
 	DllExport void DeInit();

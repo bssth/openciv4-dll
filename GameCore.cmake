@@ -47,12 +47,15 @@ function(oc4_add_game_core target)
 		PUBLIC $<$<PLATFORM_ID:Windows>:WIN32> $<$<PLATFORM_ID:Windows>:_WINDOWS>
 		PRIVATE _USRDLL CVGAMECOREDLL_EXPORTS _CRT_SECURE_NO_WARNINGS _CRT_NON_CONFORMING_SWPRINTFS _SCL_SECURE_NO_WARNINGS
 			$<$<NOT:$<CONFIG:Debug>>:NDEBUG FINAL_RELEASE> ${ARG_DEFINITIONS})
-	set_target_properties(${target} PROPERTIES CXX_STANDARD 20 CXX_SCAN_FOR_MODULES OFF FOLDER "gamecore" OUTPUT_NAME ${OC4_GAME_CORE_NAME})
+	set_target_properties(${target} PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED ON CXX_SCAN_FOR_MODULES OFF FOLDER "gamecore" OUTPUT_NAME ${OC4_GAME_CORE_NAME})
 	if(MSVC)
-		# SDK code is VC7.1-era: lenient conformance, its own code page, quiet legacy warnings.
-		target_compile_options(${target} PRIVATE /permissive /W3 /EHsc /bigobj /MP
-			/source-charset:windows-1252 /execution-charset:windows-1252
+		# Standard C++ and macro handling; retain the SDK code page and legacy warning filters.
+		target_compile_options(${target} PRIVATE /permissive- /Zc:__cplusplus /W3 /EHsc /bigobj
 			/wd4244 /wd4267 /wd4305 /wd4800 /wd4996 /wd4251 /wd4018 /wd4805 /wd4838)
+	endif()
+	# clang-cl uses the MSVC ABI but does not support Windows-1252 charset options.
+	if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+		target_compile_options(${target} PRIVATE /Zc:preprocessor /MP /source-charset:windows-1252 /execution-charset:windows-1252)
 	endif()
 	if(NOT MSVC)
 		# VC7.1-era code: Microsoft extensions, and the SDK's Windows-1252 sources as raw bytes.

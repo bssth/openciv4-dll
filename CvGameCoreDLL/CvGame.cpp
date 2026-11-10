@@ -1743,7 +1743,7 @@ void CvGame::normalizeAddExtras()
                 
                 shuffleArray(aiShuffle, NUM_CITY_PLOTS, getMapRand());                
 
-				int iJ; for (iJ = 0; iJ < NUM_CITY_PLOTS; iJ++)
+				for (int iJ = 0; iJ < NUM_CITY_PLOTS; iJ++)
 				{
 				    CvPlot* pLoopPlot = plotCity(pStartingPlot->getX_INLINE(), pStartingPlot->getY_INLINE(), aiShuffle[iJ]);
 
@@ -1771,7 +1771,7 @@ void CvGame::normalizeAddExtras()
 								{
 									if (pLoopPlot->getBonusType() == NO_BONUS)
 									{
-										int iK; for (iK = 0; iK < GC.getNumBonusInfos(); iK++)
+										for (int iK = 0; iK < GC.getNumBonusInfos(); iK++)
 										{
 											if (GC.getBonusInfo((BonusTypes)iK).isNormalize())
 											{
@@ -2829,7 +2829,7 @@ void CvGame::clearSecretaryGeneral(VoteSourceTypes eVoteSource)
 				kData.eVoteSource = eVoteSource;
 				kData.kVoteOption.eVote = (VoteTypes)j;
 				kData.kVoteOption.iCityId = -1;
-				kData.kVoteOption.szText.empty();
+				kData.kVoteOption.szText.clear();
 				kData.kVoteOption.ePlayer = NO_PLAYER;
 				setVoteOutcome(kData, NO_PLAYER_VOTE);
 				setSecretaryGeneralTimer(eVoteSource, 0);

@@ -245,7 +245,7 @@ int /*HandicapTypes*/ CyTeam::getHandicapType()
 
 std::wstring CyTeam::getName()
 {
-	return m_pTeam ? m_pTeam->getName() : L"";
+	return m_pTeam ? m_pTeam->getName().c_str() : L"";
 }
 
 int CyTeam::getNumMembers()

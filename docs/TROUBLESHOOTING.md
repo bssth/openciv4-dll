@@ -9,6 +9,9 @@ engine's log and what you ran: <https://github.com/bssth/openciv4/issues>.
 | Symptom | Usual cause |
 |---|---|
 | `boost/python.hpp` errors about templates deep in Boost | the mod's own Boost copy is on the include path ahead of `compat/`: remove it |
+| `C2664` converting a string literal to `char*` / `TCHAR*` | make read-only inputs const in declarations, definitions and overrides; keep output buffers mutable (section 3) |
+| `C2445` on a `CvString` / `CvWString` conditional | ambiguous string/pointer conversions: use compatible branch types, e.g. `.c_str()` when the result is copied into a string (section 3) |
+| invalid token pasting with `/Zc:preprocessor` | `##` must produce one valid token: change `CvArtInfo##name##*` to `CvArtInfo##name *`, likewise for `&` (section 3) |
 | `'_Alloc': is not a member` | old standard library internals; use the plain type (section 3) |
 | `use of undefined type 'CyUnit'` in a `Cy*Interface.cpp` | pybind11 needs the class's header included there (section 3) |
 | `cannot convert ... CvEventTriggerInfo::*` in a binding | the binding names a member of another class: a bug in the original, fix it (section 3) |

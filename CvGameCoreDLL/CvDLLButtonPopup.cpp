@@ -417,7 +417,7 @@ void CvDLLButtonPopup::OnOkClicked(CvPopup* pPopup, PopupReturn *pPopupReturn, C
 			argsList.add(info.getText());
 			argsList.add(info.getOption1());
 			argsList.add(info.getOption2());
-			gDLL->getPythonIFace()->callFunction((info.getPythonModule().IsEmpty() ? PYScreensModule : info.getPythonModule()), info.getOnClickedPythonCallback(), argsList.makeFunctionArgs());
+			gDLL->getPythonIFace()->callFunction((info.getPythonModule().IsEmpty() ? PYScreensModule : info.getPythonModule().c_str()), info.getOnClickedPythonCallback(), argsList.makeFunctionArgs());
 			break;
 		}
 		break;

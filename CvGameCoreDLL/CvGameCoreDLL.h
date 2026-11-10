@@ -68,28 +68,28 @@ public:
 	NiPoint3() {}
 	NiPoint3(float fx, float fy, float fz) : x(fx),y(fy),z(fz) {} 
 
-	bool NiPoint3::operator== (const NiPoint3& pt) const
+	bool operator== (const NiPoint3& pt) const
 	{	return (x == pt.x && y == pt.y && z == pt.z);	}
 
-	inline NiPoint3 NiPoint3::operator+ (const NiPoint3& pt) const
+	inline NiPoint3 operator+ (const NiPoint3& pt) const
 	{	return NiPoint3(x+pt.x,y+pt.y,z+pt.z);	}
 
-	inline NiPoint3 NiPoint3::operator- (const NiPoint3& pt) const
+	inline NiPoint3 operator- (const NiPoint3& pt) const
 	{	return NiPoint3(x-pt.x,y-pt.y,z-pt.z);	}
 
-	inline float NiPoint3::operator* (const NiPoint3& pt) const
+	inline float operator* (const NiPoint3& pt) const
 	{	return x*pt.x+y*pt.y+z*pt.z;	}
 
-	inline NiPoint3 NiPoint3::operator* (float fScalar) const
+	inline NiPoint3 operator* (float fScalar) const
 	{	return NiPoint3(fScalar*x,fScalar*y,fScalar*z);	}
 
-	inline NiPoint3 NiPoint3::operator/ (float fScalar) const
+	inline NiPoint3 operator/ (float fScalar) const
 	{
 		float fInvScalar = 1.0f/fScalar;
 		return NiPoint3(fInvScalar*x,fInvScalar*y,fInvScalar*z);
 	}
 
-	inline NiPoint3 NiPoint3::operator- () const
+	inline NiPoint3 operator- () const
 	{	return NiPoint3(-x,-y,-z);	}
 
 	inline float Length() const
@@ -204,7 +204,7 @@ namespace python = boost::python;
 #include "CvDLLPythonIFaceBase.h"
 #include "CvRandom.h"
 #include "CvArea.h"
-#include "CvDllEntity.h"
+#include "CvDLLEntity.h"
 #include "CvDeal.h"
 #include "CvDLLEntityIFaceBase.h"
 #include "CvGame.h"

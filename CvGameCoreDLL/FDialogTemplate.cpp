@@ -1,4 +1,4 @@
-#include "CvGameCoreDll.h"
+#include "CvGameCoreDLL.h"
 #include "FDialogTemplate.h"
 #include "CvGameCoreDLLUndefNew.h"
 
@@ -185,7 +185,7 @@ void CDialogTemplate::AppendString(LPCSTR string)
 	free(wideString);
 }
 
-void CDialogTemplate::AppendData(void* data, int dataLength)
+void CDialogTemplate::AppendData(const void* data, int dataLength)
 {
 	EnsureSpace(dataLength);
 

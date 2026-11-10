@@ -23,7 +23,7 @@
 //---------------------------------------------------------------------------------------------------------------------
 struct ProfileSample
 {
-	ProfileSample(char *name)					{ strcpy(Name, name); Added=false; Parent=-1; }
+	ProfileSample(const char *name)					{ strcpy(Name, name); Added=false; Parent=-1; }
 
 	char	Name[256];						// Name of sample;
 
