@@ -5,6 +5,7 @@
 #ifndef CIV4_GLOBALS_H
 #define CIV4_GLOBALS_H
 
+#include "stdext_string_hash.h"
 //#include "CvStructs.h"
 //
 // 'global' vars for Civ IV.  singleton class.
@@ -948,7 +949,7 @@ protected:
 	************************************************************************************************************************/
 
 	// all type strings are upper case and are kept in this hash map for fast lookup, Moose
-	typedef stdext::hash_map<std::string /* type string */, int /* info index */> InfosMap;
+	typedef stdext::hash_map<std::string /* type string */, int /* info index */, utils::stdext::string_traits> InfosMap;
 	InfosMap m_infosMap;
 	std::vector<std::vector<CvInfoBase *> *> m_aInfoVectors;
 
@@ -1064,7 +1065,7 @@ protected:
 	//////////////////////////////////////////////////////////////////////////
 
 	// all type strings are upper case and are kept in this hash map for fast lookup, Moose
-	typedef stdext::hash_map<std::string /* type string */, int /*enum value */> TypesMap;
+	typedef stdext::hash_map<std::string /* type string */, int /*enum value */, utils::stdext::string_traits> TypesMap;
 	TypesMap m_typesMap;
 
 	// XXX These are duplicates and are kept for enumeration convenience - most could be removed, Moose

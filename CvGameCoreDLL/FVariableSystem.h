@@ -17,6 +17,8 @@
 #define		FVARIABLESYSTEM_H
 #pragma		once
 
+#include "stdext_string_hash.h"
+
 //! Represents the different types of data an FVariable can represent.
 enum eVariableType
 {
@@ -36,7 +38,7 @@ enum eVariableType
 
 class FVariable;
 
-typedef stdext::hash_map< std::string, FVariable * > FVariableHash;
+typedef stdext::hash_map< std::string, FVariable *, utils::stdext::string_traits > FVariableHash;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // CLASS:	FVariable

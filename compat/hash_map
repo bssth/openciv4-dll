@@ -13,40 +13,69 @@
 //  - iteration visits buckets in index order and, within a bucket, keys in ascending order.
 //
 // Elements live in one std::list in iteration order, as in the original, so references and
-// iterators stay valid until their element is erased. String keys (never iterated by the
-// game) use FNV-1a instead of VC7.1's string hash.
+// iterators stay valid until their element is erased.
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <iterator>
 #include <list>
-#include <map>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#pragma pack(push,8)
+#pragma warning(push,3)
+
 namespace stdext
 {
+	inline constexpr std::uint32_t hash_seed = 0xdeadbeefu;
+
 	template <class K>
-	std::uint32_t hash_value(const K& key)
-		requires(std::is_integral_v<K> || std::is_enum_v<K>)
-	{
-		if constexpr (std::is_enum_v<K>)
-			return static_cast<std::uint32_t>(static_cast<std::underlying_type_t<K>>(key)) ^ 0xDEADBEEFu;
-		else
-			return static_cast<std::uint32_t>(key) ^ 0xDEADBEEFu;
+	std::uint32_t hash_value(const K& key) noexcept {
+		if constexpr (std::is_pointer_v<K> || std::is_null_pointer_v<K>) {
+			return static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(key)) ^ hash_seed;
+		}
+		else {
+			return static_cast<std::uint32_t>(key) ^ hash_seed;
+		}
 	}
 
-	inline std::uint32_t hash_value(std::string_view key)
+	template<class CharT, class Traits>
+	inline std::uint32_t hash_value(
+		std::basic_string_view<CharT, Traits> key) noexcept
 	{
-		std::uint32_t h = 2166136261u;
-		for (const unsigned char c : key)
-			h = (h ^ c) * 16777619u;
+		std::uint32_t h = hash_seed;
+		if (!key.empty()) {
+			const std::size_t stride = key.size() / 16 + 1;
+			const std::size_t last = key.size() - stride;
+			for (std::size_t i = 0; i <= last; i += stride)
+				h += static_cast<std::uint32_t>(key[i]);
+		}
 		return h;
 	}
-	inline std::uint32_t hash_value(const std::string& key) { return hash_value(std::string_view(key)); }
+
+	inline std::uint32_t hash_value(const char* key)
+	{
+		return hash_value(std::string_view(key));
+	}
+
+	inline std::uint32_t hash_value(const wchar_t* key)
+	{
+		return hash_value(std::wstring_view(key));
+	}
+
+	template<class CharT, class Traits, class Alloc>
+	inline std::uint32_t hash_value(
+		const std::basic_string<CharT, Traits, Alloc>& key) noexcept
+	{
+		return hash_value(
+			std::basic_string_view<CharT, Traits>(key.data(), key.size()));
+	}
 
 	template <class K, class Pr = std::less<K>>
 	class hash_compare
@@ -59,65 +88,120 @@ namespace stdext
 		};
 
 		hash_compare() = default;
-		explicit hash_compare(Pr pred) : m_pred(pred) {}
+		hash_compare(Pr pred) : comp(pred) {}
 
 		std::size_t operator()(const K& key) const { return hash_value(key); }
-		bool operator()(const K& a, const K& b) const { return m_pred(a, b); }
+		bool operator()(const K& a, const K& b) const { return comp(a, b); }
 
-	private:
-		Pr m_pred{};
+	protected:
+		Pr comp{};
 	};
+
+
+	namespace hash_map_detail
+	{
+		template<class Tr, class K, class Q, class = void>
+		struct transparent_lookup : std::false_type {};
+
+		template<class Tr, class K, class Q>
+		struct transparent_lookup<Tr, K, Q, std::void_t<typename Tr::is_transparent>>
+			: std::bool_constant<
+				std::is_invocable_r_v<std::size_t, const Tr&, const Q&>
+				&& std::is_invocable_r_v<bool, const Tr&, const K&, const Q&>
+				&& std::is_invocable_r_v<bool, const Tr&, const Q&, const K&>> {};
+	}
 
 	template <class K, class V, class Tr = hash_compare<K, std::less<K>>, class A = std::allocator<std::pair<const K, V>>>
 	class hash_map
 	{
-		using List = std::list<std::pair<const K, V>, A>;
+		using ValueAllocator = typename std::allocator_traits<A>::template rebind_alloc<std::pair<const K, V>>;
+		using List = std::list<std::pair<const K, V>, ValueAllocator>;
+		using BoundaryAllocator = typename std::allocator_traits<ValueAllocator>::template rebind_alloc<typename List::iterator>;
+		using Boundaries = std::vector<typename List::iterator, BoundaryAllocator>;
 
 	public:
 		using key_type = K;
 		using mapped_type = V;
+		using referent_type = V;
 		using value_type = std::pair<const K, V>;
 		using key_compare = Tr;
-		using allocator_type = A;
-		using size_type = std::size_t;
-		using difference_type = std::ptrdiff_t;
+		using allocator_type = ValueAllocator;
+		using size_type = typename List::size_type;
+		using difference_type = typename List::difference_type;
+		using pointer = typename List::pointer;
+		using const_pointer = typename List::const_pointer;
 		using reference = value_type&;
 		using const_reference = const value_type&;
 		using iterator = typename List::iterator;
 		using const_iterator = typename List::const_iterator;
+		using reverse_iterator = typename List::reverse_iterator;
+		using const_reverse_iterator = typename List::const_reverse_iterator;
+		enum { bucket_size = Tr::bucket_size, min_buckets = Tr::min_buckets };
 
-		hash_map() { reset(); }
-		hash_map(const hash_map& other) : m_list(other.m_list), m_mask(other.m_mask), m_maxidx(other.m_maxidx), m_comp(other.m_comp)
+		class value_compare
 		{
-			rebuild(other.m_begin.size());
+		public:
+			// The old binary_function base supplied these typedefs.
+			using first_argument_type = value_type;
+			using second_argument_type = value_type;
+			using result_type = bool;
+			value_compare(const key_compare& traits) : comp(traits) {}
+			bool operator()(const value_type& left, const value_type& right) const
+			{
+				return comp(left.first, right.first);
+			}
+		protected:
+			key_compare comp;
+		};
+
+		hash_map() : hash_map(key_compare(), allocator_type()) {}
+		explicit hash_map(const key_compare& comp) : hash_map(comp, allocator_type()) {}
+		hash_map(const key_compare& comp, const allocator_type& alloc)
+			: m_comp(comp), m_list(alloc),
+			  m_begin(Tr::min_buckets + 1, m_list.end(), BoundaryAllocator(alloc)) {}
+
+		template<class It>
+		hash_map(It first, It last) : hash_map(first, last, key_compare(), allocator_type()) {}
+		template<class It>
+		hash_map(It first, It last, const key_compare& traits)
+			: hash_map(first, last, traits, allocator_type()) {}
+		template<class It>
+		hash_map(It first, It last, const key_compare& traits, const allocator_type& alloc)
+			: hash_map(traits, alloc)
+		{
+			insert(first, last);
 		}
-		hash_map(hash_map&& other) : m_list(std::move(other.m_list)), m_mask(other.m_mask), m_maxidx(other.m_maxidx), m_comp(other.m_comp)
+
+		hash_map(const hash_map& other)
+			: m_comp(other.m_comp), m_list(other.get_allocator()),
+			  m_begin(BoundaryAllocator(other.get_allocator()))
 		{
-			rebuild(other.m_begin.size());
-			other.clear();
+			// VC7.1 constructs empty storage with the source allocator, then _Copy.
+			// Do not use modern select_on_container_copy_construction or move stealing.
+			*this = other;
 		}
 		hash_map& operator=(const hash_map& other)
 		{
 			if (this != &other)
 			{
-				m_list = other.m_list;
+				// VC7.1 _Copy: construct pairs rather than assign const keys.
+				m_begin.resize(other.m_begin.size(), end());
 				m_mask = other.m_mask;
 				m_maxidx = other.m_maxidx;
-				m_comp = other.m_comp;
-				rebuild(other.m_begin.size());
-			}
-			return *this;
-		}
-		hash_map& operator=(hash_map&& other)
-		{
-			if (this != &other)
-			{
-				m_list = std::move(other.m_list);
-				m_mask = other.m_mask;
-				m_maxidx = other.m_maxidx;
-				m_comp = other.m_comp;
-				rebuild(other.m_begin.size());
-				other.clear();
+				m_list.clear();
+				try
+				{
+					m_list.insert(end(), other.begin(), other.end());
+					m_comp = other.m_comp;
+				}
+				catch (...)
+				{
+					m_list.clear();
+					for (auto& boundary : m_begin)
+						boundary = end();
+					throw;
+				}
+				copy_boundaries(other);
 			}
 			return *this;
 		}
@@ -126,58 +210,184 @@ namespace stdext
 		iterator end() { return m_list.end(); }
 		const_iterator begin() const { return m_list.begin(); }
 		const_iterator end() const { return m_list.end(); }
+		reverse_iterator rbegin() { return m_list.rbegin(); }
+		const_reverse_iterator rbegin() const { return m_list.rbegin(); }
+		reverse_iterator rend() { return m_list.rend(); }
+		const_reverse_iterator rend() const { return m_list.rend(); }
+		size_type max_size() const { return m_list.max_size(); }
+		key_compare key_comp() const { return m_comp; }
+		value_compare value_comp() const { return value_compare(key_comp()); }
 		size_type size() const { return m_list.size(); }
 		bool empty() const { return m_list.empty(); }
+		allocator_type get_allocator() const { return m_list.get_allocator(); }
 
-		iterator find(const K& key)
+		iterator find(const K& key) { return lower_bound(key); }
+		const_iterator find(const K& key) const { return lower_bound(key); }
+		size_type count(const K& key) const
+		{
+			const auto range = equal_range(key);
+			return static_cast<size_type>(std::distance(range.first, range.second));
+		}
+
+		// VC7.1 bounds only succeed for an equivalent key. Missing keys return end().
+		iterator lower_bound(const K& key)
 		{
 			const size_type b = bucket(key);
 			for (iterator it = m_begin[b]; it != m_begin[b + 1]; ++it)
-			{
-				if (m_comp(key, it->first))
-					break; // ascending within the bucket
 				if (!m_comp(it->first, key))
-					return it;
-			}
+					return m_comp(key, it->first) ? end() : it;
 			return end();
 		}
-		const_iterator find(const K& key) const { return const_cast<hash_map*>(this)->find(key); }
-		// Lookups by C string without building a std::string (CvGlobals::getDefineINT and
-		// getInfoTypeForString run many times a turn).
-		iterator find(const char* key)
-			requires std::is_same_v<K, std::string>
+		iterator upper_bound(const K& key)
 		{
-			const std::string_view text(key);
-			const size_type b = bucketOfHash(hash_value(text));
+			const size_type b = bucket(key);
+			for (iterator it = m_begin[b + 1]; it != m_begin[b];)
+				if (!m_comp(key, (--it)->first))
+					return m_comp(it->first, key) ? end() : ++it;
+			return end();
+		}
+		std::pair<iterator, iterator> equal_range(const K& key)
+		{
+			const size_type b = bucket(key);
 			for (iterator it = m_begin[b]; it != m_begin[b + 1]; ++it)
-			{
-				const int c = std::string_view(it->first).compare(text);
-				if (c > 0)
-					break;
-				if (c == 0)
-					return it;
-			}
+				if (!m_comp(it->first, key))
+				{
+					const iterator first = it;
+					for (; it != m_begin[b + 1]; ++it)
+						if (m_comp(key, it->first)) break;
+					if (first == it) break;
+					return {first, it};
+				}
+			return {end(), end()};
+		}
+		const_iterator lower_bound(const K& key) const
+		{
+			const size_type b = bucket(key);
+			for (const_iterator it = m_begin[b]; it != m_begin[b + 1]; ++it)
+				if (!m_comp(it->first, key))
+					return m_comp(key, it->first) ? end() : it;
 			return end();
 		}
-		const_iterator find(const char* key) const
-			requires std::is_same_v<K, std::string>
+		const_iterator upper_bound(const K& key) const
 		{
-			return const_cast<hash_map*>(this)->find(key);
+			const size_type b = bucket(key);
+			for (const_iterator it = m_begin[b + 1]; it != m_begin[b];)
+				if (!m_comp(key, (--it)->first))
+					return m_comp(it->first, key) ? end() : ++it;
+			return end();
 		}
-		size_type count(const K& key) const { return find(key) != end() ? 1 : 0; }
+		std::pair<const_iterator, const_iterator> equal_range(const K& key) const
+		{
+			const size_type b = bucket(key);
+			for (const_iterator it = m_begin[b]; it != m_begin[b + 1]; ++it)
+				if (!m_comp(it->first, key))
+				{
+					const const_iterator first = it;
+					for (; it != m_begin[b + 1]; ++it)
+						if (m_comp(key, it->first)) break;
+					if (first == it) break;
+					return {first, it};
+				}
+			return {end(), end()};
+		}
+
+		// Opt-in heterogeneous lookup: equivalent K/Q values must hash identically.
+		template<class Q, std::enable_if_t<hash_map_detail::transparent_lookup<Tr, K, Q>::value, int> = 0>
+		iterator find(const Q& key) { return lower_bound(key); }
+		template<class Q, std::enable_if_t<hash_map_detail::transparent_lookup<Tr, K, Q>::value, int> = 0>
+		const_iterator find(const Q& key) const { return lower_bound(key); }
+		template<class Q, std::enable_if_t<hash_map_detail::transparent_lookup<Tr, K, Q>::value, int> = 0>
+		size_type count(const Q& key) const
+		{
+			const auto range = equal_range(key);
+			return static_cast<size_type>(std::distance(range.first, range.second));
+		}
+
+		// VC7.1 bounds only succeed for an equivalent key. Missing keys return end().
+		template<class Q, std::enable_if_t<hash_map_detail::transparent_lookup<Tr, K, Q>::value, int> = 0>
+		iterator lower_bound(const Q& key)
+		{
+			const size_type b = bucketOfHash(static_cast<size_type>(m_comp(key)));
+			for (iterator it = m_begin[b]; it != m_begin[b + 1]; ++it)
+				if (!m_comp(it->first, key))
+					return m_comp(key, it->first) ? end() : it;
+			return end();
+		}
+		template<class Q, std::enable_if_t<hash_map_detail::transparent_lookup<Tr, K, Q>::value, int> = 0>
+		iterator upper_bound(const Q& key)
+		{
+			const size_type b = bucketOfHash(static_cast<size_type>(m_comp(key)));
+			for (iterator it = m_begin[b + 1]; it != m_begin[b];)
+				if (!m_comp(key, (--it)->first))
+					return m_comp(it->first, key) ? end() : ++it;
+			return end();
+		}
+		template<class Q, std::enable_if_t<hash_map_detail::transparent_lookup<Tr, K, Q>::value, int> = 0>
+		std::pair<iterator, iterator> equal_range(const Q& key)
+		{
+			const size_type b = bucketOfHash(static_cast<size_type>(m_comp(key)));
+			for (iterator it = m_begin[b]; it != m_begin[b + 1]; ++it)
+				if (!m_comp(it->first, key))
+				{
+					const iterator first = it;
+					for (; it != m_begin[b + 1]; ++it)
+						if (m_comp(key, it->first)) break;
+					if (first == it) break;
+					return {first, it};
+				}
+			return {end(), end()};
+		}
+		template<class Q, std::enable_if_t<hash_map_detail::transparent_lookup<Tr, K, Q>::value, int> = 0>
+		const_iterator lower_bound(const Q& key) const
+		{
+			const size_type b = bucketOfHash(static_cast<size_type>(m_comp(key)));
+			for (const_iterator it = m_begin[b]; it != m_begin[b + 1]; ++it)
+				if (!m_comp(it->first, key))
+					return m_comp(key, it->first) ? end() : it;
+			return end();
+		}
+		template<class Q, std::enable_if_t<hash_map_detail::transparent_lookup<Tr, K, Q>::value, int> = 0>
+		const_iterator upper_bound(const Q& key) const
+		{
+			const size_type b = bucketOfHash(static_cast<size_type>(m_comp(key)));
+			for (const_iterator it = m_begin[b + 1]; it != m_begin[b];)
+				if (!m_comp(key, (--it)->first))
+					return m_comp(it->first, key) ? end() : ++it;
+			return end();
+		}
+		template<class Q, std::enable_if_t<hash_map_detail::transparent_lookup<Tr, K, Q>::value, int> = 0>
+		std::pair<const_iterator, const_iterator> equal_range(const Q& key) const
+		{
+			const size_type b = bucketOfHash(static_cast<size_type>(m_comp(key)));
+			for (const_iterator it = m_begin[b]; it != m_begin[b + 1]; ++it)
+				if (!m_comp(it->first, key))
+				{
+					const const_iterator first = it;
+					for (; it != m_begin[b + 1]; ++it)
+						if (m_comp(key, it->first)) break;
+					if (first == it) break;
+					return {first, it};
+				}
+			return {end(), end()};
+		}
 
 		std::pair<iterator, bool> insert(const value_type& value)
 		{
 			if (m_maxidx <= size() / Tr::bucket_size)
 				grow();
 			const size_type b = bucket(value.first);
-			iterator pos = m_begin[b];
-			for (; pos != m_begin[b + 1]; ++pos)
+			iterator pos = m_begin[b + 1];
+			while (pos != m_begin[b])
 			{
+				--pos;
 				if (m_comp(value.first, pos->first))
+					continue;
+				if (m_comp(pos->first, value.first))
+				{
+					++pos;
 					break;
-				if (!m_comp(pos->first, value.first))
-					return { pos, false };
+				}
+				return {pos, false};
 			}
 			const iterator it = m_list.insert(pos, value);
 			for (size_type j = b; m_begin[j] == pos;) // new first element of its bucket
@@ -187,6 +397,10 @@ namespace stdext
 					break;
 			}
 			return { it, true };
+		}
+		iterator insert(iterator, const value_type& value)
+		{
+			return insert(value).first; // VC7.1 ignores the hint.
 		}
 		template <class It>
 		void insert(It first, It last)
@@ -227,11 +441,14 @@ namespace stdext
 		}
 		size_type erase(const K& key)
 		{
-			const iterator it = find(key);
-			if (it == end())
-				return 0;
-			erase(it);
-			return 1;
+			const auto range = equal_range(key);
+			const size_type removed = static_cast<size_type>(std::distance(range.first, range.second));
+			erase(range.first, range.second);
+			return removed;
+		}
+		void erase(const key_type* first, const key_type* last)
+		{
+			for (; first != last; ++first) erase(*first);
 		}
 
 		void clear()
@@ -242,18 +459,36 @@ namespace stdext
 
 		void swap(hash_map& other)
 		{
-			const size_type mine = m_begin.size(), theirs = other.m_begin.size();
+			if (this == &other)
+				return;
+			if (m_list.get_allocator() != other.m_list.get_allocator())
+			{
+				// As in VC7.1, do not swap lists with unequal allocators.
+				hash_map tmp(*this);
+				*this = other;
+				other = tmp;
+				return;
+			}
+			// Modern list end iterators need not follow the elements on swap.
+			size_type mine = m_begin.size(), theirs = other.m_begin.size();
+			while (mine != 0 && m_begin[mine - 1] == end())
+				--mine;
+			while (theirs != 0 && other.m_begin[theirs - 1] == other.end())
+				--theirs;
 			m_list.swap(other.m_list);
+			m_begin.swap(other.m_begin);
 			std::swap(m_mask, other.m_mask);
 			std::swap(m_maxidx, other.m_maxidx);
+			for (size_type i = theirs; i < m_begin.size(); ++i)
+				m_begin[i] = end();
+			for (size_type i = mine; i < other.m_begin.size(); ++i)
+				other.m_begin[i] = other.end();
 			std::swap(m_comp, other.m_comp);
-			rebuild(theirs);
-			other.rebuild(mine);
 		}
 
 	private:
-		size_type bucket(const K& key) const { return bucketOfHash(static_cast<std::uint32_t>(m_comp(key))); }
-		size_type bucketOfHash(std::uint32_t hash) const
+		size_type bucket(const K& key) const { return bucketOfHash(static_cast<size_type>(m_comp(key))); }
+		size_type bucketOfHash(size_type hash) const
 		{
 			size_type n = hash & m_mask;
 			if (m_maxidx <= n)
@@ -268,80 +503,113 @@ namespace stdext
 			m_maxidx = 1;
 		}
 
-		// Opens bucket m_maxidx by moving its keys out of the bucket they shared.
+		// VC7.1 splits incrementally, without temporary storage or node allocation.
+		// Like the original, a throwing hash can leave a partially split table.
 		void grow()
 		{
 			if (m_begin.size() - 1 <= m_maxidx)
 			{
 				m_mask = ((m_begin.size() - 1) << 1) - 1;
-				m_begin.resize(m_mask + 2, m_list.end());
+				m_begin.resize(m_mask + 2, end());
 			}
 			else if (m_mask < m_maxidx)
 				m_mask = (m_mask << 1) + 1;
 
 			const size_type split = m_maxidx - (m_mask >> 1) - 1;
-			const size_type opened = m_maxidx++;
-			const iterator first = m_begin[split], last = m_begin[split + 1];
-			std::vector<iterator> moving;
-			iterator stays = last;
-			for (iterator it = first; it != last; ++it)
+			for (iterator it = m_begin[split]; it != m_begin[split + 1];)
 			{
-				if ((static_cast<std::uint32_t>(m_comp(it->first)) & m_mask) != split)
-					moving.push_back(it);
-				else if (stays == last)
-					stays = it;
-			}
-			if (moving.empty())
-				return;
-			if (stays != first)
-				for (size_type j = split; m_begin[j] == first;)
+				const size_type newBucket = static_cast<size_type>(m_comp(it->first)) & m_mask;
+				if (newBucket == split)
+					++it;
+				else
 				{
-					m_begin[j] = stays;
-					if (j-- == 0)
-						break;
+					const iterator next = std::next(it);
+					if (next != end())
+					{
+						for (size_type j = split; m_begin[j] == it; --j)
+						{
+							m_begin[j] = next;
+							if (j == 0) break;
+						}
+						m_list.splice(end(), m_list, it);
+						it = std::prev(end());
+						m_begin[m_maxidx + 1] = end();
+					}
+					for (size_type j = m_maxidx; split < j; --j)
+					{
+						if (m_begin[j] != end()) break;
+						m_begin[j] = it;
+					}
+					if (next == end()) break;
+					it = next;
 				}
-			// The opened bucket is the last one: its keys go to the end, still ascending.
-			for (const iterator it : moving)
-				m_list.splice(m_list.end(), m_list, it);
-			m_begin[opened] = moving.front();
-			for (size_type k = opened; k-- > 0 && m_begin[k] == m_list.end();)
-				m_begin[k] = moving.front();
+			}
+			++m_maxidx;
 		}
 
-		// Recomputes the bucket starts from the list order (after copying or moving the list).
-		void rebuild(size_type tableSize)
+		// Translate boundaries in lockstep, as in VC7.1 _Copy: no hashing
+		// or allocation after the list has been copied.
+		void copy_boundaries(const hash_map& other)
 		{
-			m_begin.assign(tableSize, m_list.end());
-			std::vector<bool> set(tableSize, false);
-			for (iterator it = m_list.begin(); it != m_list.end(); ++it)
+			iterator to = begin();
+			const_iterator from = other.begin();
+			for (size_type b = 0; b < m_begin.size();)
 			{
-				const size_type b = bucket(it->first);
-				if (!set[b])
+				if (from == other.m_begin[b])
+					m_begin[b++] = to;
+				else
 				{
-					m_begin[b] = it;
-					set[b] = true;
+					++from;
+					++to;
 				}
 			}
-			for (size_type b = m_maxidx; b-- > 0;)
-				if (!set[b])
-					m_begin[b] = m_begin[b + 1];
 		}
 
+		Tr m_comp;
 		List m_list;
-		std::vector<iterator> m_begin; // bucket b is [m_begin[b], m_begin[b + 1]); unused buckets hold end()
+		Boundaries m_begin; // bucket b is [m_begin[b], m_begin[b + 1]); unused buckets hold end()
 		size_type m_mask = 1;
 		size_type m_maxidx = 1;
-		Tr m_comp;
 	};
 
-	// Pointer keys (AND2's CvReachablePlotSet): VC7.1 hashed the address, so the original's
-	// iteration order moved with wherever the heap put the objects. These iterate in address
-	// order instead, which for elements of one array (CvMap's plots) is their index order
-	// and the same in every run.
-	template <class T, class V, class Tr, class A>
-	class hash_map<T*, V, Tr, A> : public std::map<T*, V, std::less<T*>, A>
+	// VC7.1 compares the iteration sequence, including its history-dependent order.
+	template<class K, class V, class Tr, class A>
+	bool operator==(const hash_map<K, V, Tr, A>& left, const hash_map<K, V, Tr, A>& right)
 	{
-	public:
-		using std::map<T*, V, std::less<T*>, A>::map;
-	};
+		return left.size() == right.size() && std::equal(left.begin(), left.end(), right.begin());
+	}
+	template<class K, class V, class Tr, class A>
+	bool operator!=(const hash_map<K, V, Tr, A>& left, const hash_map<K, V, Tr, A>& right)
+	{
+		return !(left == right);
+	}
+	template<class K, class V, class Tr, class A>
+	bool operator<(const hash_map<K, V, Tr, A>& left, const hash_map<K, V, Tr, A>& right)
+	{
+		return std::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end());
+	}
+	template<class K, class V, class Tr, class A>
+	bool operator>(const hash_map<K, V, Tr, A>& left, const hash_map<K, V, Tr, A>& right)
+	{
+		return right < left;
+	}
+	template<class K, class V, class Tr, class A>
+	bool operator<=(const hash_map<K, V, Tr, A>& left, const hash_map<K, V, Tr, A>& right)
+	{
+		return !(right < left);
+	}
+	template<class K, class V, class Tr, class A>
+	bool operator>=(const hash_map<K, V, Tr, A>& left, const hash_map<K, V, Tr, A>& right)
+	{
+		return !(left < right);
+	}
+	template<class K, class V, class Tr, class A>
+	void swap(hash_map<K, V, Tr, A>& left, hash_map<K, V, Tr, A>& right)
+	{
+		left.swap(right);
+	}
+
 }
+
+#pragma warning(pop)
+#pragma pack(pop)
