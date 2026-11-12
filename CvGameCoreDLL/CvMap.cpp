@@ -65,7 +65,7 @@ void CvMap::init(CvMapInitData* pInitInfo/*=NULL*/)
 	int iX, iY;
 
 	PROFILE("CvMap::init");
-	gDLL->logMemState( CvString::format("CvMap::init begin - world size=%s, climate=%s, sealevel=%s, num custom options=%6", 
+	gDLL->logMemState( CvString::format("CvMap::init begin - world size=%s, climate=%s, sealevel=%s, num custom options=%d", 
 		GC.getWorldInfo(GC.getInitCore().getWorldSize()).getDescription(), 
 		GC.getClimateInfo(GC.getInitCore().getClimate()).getDescription(), 
 		GC.getSeaLevelInfo(GC.getInitCore().getSeaLevel()).getDescription(),
