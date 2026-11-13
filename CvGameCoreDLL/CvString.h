@@ -323,7 +323,10 @@ inline bool CvString::formatv(std::string & out, const char * fmt, va_list args)
 	do
 	{
 		int maxlen = 2047+2048*attempts;
-		len = _vsnprintf(pbuf,maxlen,fmt,args);
+		va_list argsCopy; // openciv4: a fresh copy per attempt (on x86-64 Linux one read uses a va_list up)
+		va_copy(argsCopy, args);
+		len = _vsnprintf(pbuf,maxlen,fmt,argsCopy);
+		va_end(argsCopy);
 		attempts++;
 		success = (len>=0 && len<=maxlen);
 		if (!success)
@@ -366,7 +369,10 @@ inline bool CvWString::formatv(std::wstring & out, const wchar * fmt, va_list ar
 	do
 	{
 		int maxlen = 2047+2048*attempts;
-		len = _vsnwprintf(pbuf,maxlen,fmt,args);
+		va_list argsCopy; // openciv4: a fresh copy per attempt (on x86-64 Linux one read uses a va_list up)
+		va_copy(argsCopy, args);
+		len = _vsnwprintf(pbuf,maxlen,fmt,argsCopy);
+		va_end(argsCopy);
 		attempts++;
 		success = (len>=0 && len<=maxlen);
 		if (!success)
