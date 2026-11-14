@@ -1561,7 +1561,9 @@ int CvPlot::seeFromLevel(TeamTypes eTeam) const
 
 	FAssertMsg(getTerrainType() != NO_TERRAIN, "TerrainType is not assigned a valid value");
 
-	iLevel = GC.getTerrainInfo(getTerrainType()).getSeeFromLevel();
+	// openciv4: map generation updates sight before plots have terrain, and the original code then read
+	// m_paTerrainInfo[-1], memory before the array (a crash with newlib's allocator on the Switch).
+	iLevel = (getTerrainType() == NO_TERRAIN) ? 0 : GC.getTerrainInfo(getTerrainType()).getSeeFromLevel();
 
 	if (isPeak())
 	{
@@ -1593,7 +1595,9 @@ int CvPlot::seeThroughLevel() const
 
 	FAssertMsg(getTerrainType() != NO_TERRAIN, "TerrainType is not assigned a valid value");
 
-	iLevel = GC.getTerrainInfo(getTerrainType()).getSeeThroughLevel();
+	// openciv4: map generation updates sight before plots have terrain, and the original code then read
+	// m_paTerrainInfo[-1], memory before the array (a crash with newlib's allocator on the Switch).
+	iLevel = (getTerrainType() == NO_TERRAIN) ? 0 : GC.getTerrainInfo(getTerrainType()).getSeeThroughLevel();
 
 	if (getFeatureType() != NO_FEATURE)
 	{
