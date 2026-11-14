@@ -36,6 +36,7 @@ namespace pybind11::detail
 #include <pybind11/pybind11.h>
 
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
@@ -182,14 +183,25 @@ namespace boost::python
 		const char* doc = "";
 	};
 
-	// The SDK only uses min == max (no defaulted arguments), which binds as a plain function.
+	// min == max binds as a plain function (all the SDK uses). With min < max (mods: member
+	// functions with default arguments), class_::def registers one overload per argument
+	// count, each calling through the qualified name so that C++ fills in the defaults.
 #define BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(name, fn, minArgs, maxArgs)                          \
-	static_assert((minArgs) == (maxArgs), "openciv4 compat: defaulted overloads not supported"); \
+	static_assert((minArgs) <= (maxArgs), "openciv4 compat: minArgs > maxArgs");                 \
+	struct name : boost::python::overloads_base                                                   \
+	{                                                                                             \
+		static constexpr std::size_t min_args = (minArgs);                                        \
+		static constexpr std::size_t max_args = (maxArgs);                                        \
+		template <class S, class... A>                                                            \
+		static decltype(auto) invoke(S& self, A... a) { return self.fn(a...); }                   \
+		name(boost::python::args_, const char* d = "") { doc = d; }                               \
+	};
+#define BOOST_PYTHON_FUNCTION_OVERLOADS(name, fn, minArgs, maxArgs)                                 \
+	static_assert((minArgs) == (maxArgs), "openciv4 compat: defaulted free-function overloads not supported"); \
 	struct name : boost::python::overloads_base                                                   \
 	{                                                                                             \
 		name(boost::python::args_, const char* d = "") { doc = d; }                               \
 	};
-#define BOOST_PYTHON_FUNCTION_OVERLOADS BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS
 
 	namespace compat_detail
 	{
@@ -215,6 +227,37 @@ namespace boost::python
 		{
 			static constexpr py::return_value_policy policy = policyOf<P>();
 		};
+
+		// Defaulted member overloads: the first N parameter types of a member function.
+		template <class F>
+		struct memberFn;
+		template <class R, class C, class... P>
+		struct memberFn<R (C::*)(P...)>
+		{
+			using cls = C;
+			using ret = R;
+			using params = std::tuple<P...>;
+		};
+		template <class R, class C, class... P>
+		struct memberFn<R (C::*)(P...) const>
+		{
+			using cls = const C;
+			using ret = R;
+			using params = std::tuple<P...>;
+		};
+		template <class Tuple, std::size_t... I>
+		auto takeImpl(std::index_sequence<I...>) -> std::tuple<std::tuple_element_t<I, Tuple>...>;
+		template <std::size_t N, class Tuple>
+		using take_t = decltype(takeImpl<Tuple>(std::make_index_sequence<N>{}));
+		template <class O, class C, class R, class Tuple>
+		struct overloadCall;
+		template <class O, class C, class R, class... P>
+		struct overloadCall<O, C, R, std::tuple<P...>>
+		{
+			static R call(C& self, P... p) { return O::invoke(self, p...); }
+		};
+		template <class O>
+		concept defaultedOverloads = std::is_base_of_v<overloads_base, O> && requires { O::max_args; } && (O::min_args < O::max_args);
 
 		// Boost call extras -> pybind11 extras (docstrings pass through).
 		template <class E>
@@ -298,6 +341,16 @@ namespace boost::python
 			return *this;
 		}
 
+		// A member function with default arguments: one pybind11 overload per argument count.
+		template <class F, class O, class... E>
+			requires compat_detail::defaultedOverloads<std::decay_t<O>>
+		class_& def(const char* name, F, O&& overloads, E&&... extras)
+		{
+			using Ovl = std::decay_t<O>;
+			defDefaulted<Ovl, F>(name, overloads.doc, std::make_index_sequence<Ovl::max_args - Ovl::min_args + 1>{}, extras...);
+			return *this;
+		}
+
 		template <class... A, class... E>
 		class_& def(init<A...>, E&&... extras)
 		{
@@ -320,6 +373,16 @@ namespace boost::python
 		}
 
 	private:
+		template <class Ovl, class F, std::size_t... K, class... E>
+		void defDefaulted(const char* name, const char* doc, std::index_sequence<K...>, const E&... extras)
+		{
+			using M = compat_detail::memberFn<F>;
+			(m_cls.def(name,
+				&compat_detail::overloadCall<Ovl, typename M::cls, typename M::ret,
+					compat_detail::take_t<Ovl::min_args + K, typename M::params>>::call,
+				doc, compat_detail::translate(extras)...), ...);
+		}
+
 		PyClass m_cls;
 	};
 
