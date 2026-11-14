@@ -1,6 +1,7 @@
 // openciv4: the Win32 behaviour the game core relies on off Windows.
 #undef NDEBUG // (the checks are asserts: kept in every build)
 #include <windows.h>
+#include <psapi.h>
 #include <cassert>
 #include <cstdio>
 #include <string>
@@ -55,5 +56,18 @@ int main()
 	// Fixed widths the save format depends on
 	static_assert(sizeof(DWORD) == 4 && sizeof(LONG) == 4 && sizeof(POINT) == 8);
 	assert(MessageBox(nullptr, "t", "c", MB_YESNO) == IDYES);
+	// What mods use beyond the SDK (Realism Invictus): key state, memory status
+	static_assert(VK_SPACE == 0x20 && VK_ESCAPE == 0x1B && VK_RBUTTON == 0x02 && VK_LEFT == 0x25 && VK_DOWN == 0x28);
+	assert(GetAsyncKeyState(VK_SPACE) == GetKeyState(VK_SPACE));
+	MEMORYSTATUSEX status = {};
+	status.dwLength = sizeof(status);
+	assert(GlobalMemoryStatusEx(&status) && status.ullTotalPhys > 0 && status.ullTotalVirtual == (1ULL << 47));
+	assert(status.ullAvailVirtual <= status.ullTotalVirtual && status.ullAvailVirtual > status.ullTotalVirtual / 2);
+	PROCESS_MEMORY_COUNTERS pmc;
+#if defined(__linux__)
+	assert(GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)) && pmc.WorkingSetSize > 0 && pmc.PeakWorkingSetSize >= pmc.WorkingSetSize);
+#else
+	(void)GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)); // (reports failure; callers skip the log line)
+#endif
 	std::puts("posix_compat_test: all passed");
 }

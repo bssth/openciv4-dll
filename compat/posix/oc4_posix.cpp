@@ -2,7 +2,9 @@
 #include "windows.h"
 
 #include <cstring>
+#include <cstdio>
 #include <dlfcn.h>
+#include <unistd.h>
 #include <locale.h>
 #ifdef __APPLE__
 #include <xlocale.h>
@@ -194,4 +196,38 @@ int oc4_vswprintf(wchar_t* out, size_t count, const wchar_t* format, va_list arg
 #endif
 	va_end(copy);
 	return result;
+}
+
+BOOL GlobalMemoryStatusEx(MEMORYSTATUSEX* status)
+{
+	if (status == nullptr)
+		return FALSE;
+	const DWORDLONG page = static_cast<DWORDLONG>(sysconf(_SC_PAGESIZE));
+	const DWORDLONG total = page * static_cast<DWORDLONG>(sysconf(_SC_PHYS_PAGES));
+#ifdef _SC_AVPHYS_PAGES
+	const DWORDLONG avail = page * static_cast<DWORDLONG>(sysconf(_SC_AVPHYS_PAGES));
+#else
+	const DWORDLONG avail = total / 2;
+#endif
+	DWORDLONG used = 0; // the process's address space in use (VmSize)
+#if defined(__linux__)
+	if (std::FILE* f = std::fopen("/proc/self/status", "r"))
+	{
+		char line[256];
+		unsigned long kb = 0;
+		while (std::fgets(line, sizeof(line), f))
+			if (std::sscanf(line, "VmSize: %lu kB", &kb) == 1)
+				used = static_cast<DWORDLONG>(kb) * 1024;
+		std::fclose(f);
+	}
+#endif
+	status->dwMemoryLoad = total ? static_cast<DWORD>(100 - avail * 100 / total) : 0;
+	status->ullTotalPhys = total;
+	status->ullAvailPhys = avail;
+	status->ullTotalPageFile = total;
+	status->ullAvailPageFile = avail;
+	status->ullTotalVirtual = 1ULL << 47;
+	status->ullAvailVirtual = status->ullTotalVirtual - used;
+	status->ullAvailExtendedVirtual = 0;
+	return TRUE;
 }

@@ -110,6 +110,18 @@ struct POINT
 #define VK_RCONTROL 0xA3
 #define VK_LMENU 0xA4
 #define VK_RMENU 0xA5
+#define VK_LBUTTON 0x01
+#define VK_RBUTTON 0x02
+#define VK_MBUTTON 0x04
+#define VK_BACK 0x08
+#define VK_TAB 0x09
+#define VK_RETURN 0x0D
+#define VK_ESCAPE 0x1B
+#define VK_SPACE 0x20
+#define VK_LEFT 0x25
+#define VK_UP 0x26
+#define VK_RIGHT 0x27
+#define VK_DOWN 0x28
 #define IDOK 1
 #define IDCANCEL 2
 #define IDABORT 3
@@ -199,6 +211,25 @@ DWORD GetModuleFileNameW(HMODULE module, wchar_t* path, DWORD size);
 // Keyboard state comes from the engine, which owns the window; it sets this when it starts.
 extern short (*oc4_GetKeyState)(int);
 inline short GetKeyState(int key) { return oc4_GetKeyState ? oc4_GetKeyState(key) : 0; }
+// GlobalMemoryStatusEx as on 64-bit Windows: user address space 128 TB (mods compare used address
+// space against it, a 32-bit concern that never triggers at x64), physical memory from the system.
+typedef unsigned long long DWORDLONG;
+typedef struct _MEMORYSTATUSEX
+{
+	DWORD dwLength;
+	DWORD dwMemoryLoad;
+	DWORDLONG ullTotalPhys;
+	DWORDLONG ullAvailPhys;
+	DWORDLONG ullTotalPageFile;
+	DWORDLONG ullAvailPageFile;
+	DWORDLONG ullTotalVirtual;
+	DWORDLONG ullAvailVirtual;
+	DWORDLONG ullAvailExtendedVirtual;
+} MEMORYSTATUSEX;
+BOOL GlobalMemoryStatusEx(MEMORYSTATUSEX* status);
+
+// The engine reports the current state either way, so the asynchronous query is the same call.
+inline short GetAsyncKeyState(int key) { return GetKeyState(key); }
 
 // The core only converts narrow text the mods wrote in Windows-1252 or UTF-8.
 int MultiByteToWideChar(UINT codePage, DWORD flags, const char* src, int srcLen, wchar_t* dst, int dstLen);
