@@ -40,7 +40,7 @@ endif()
 
 # The vanilla game core; its headers are what the host is compiled against.
 # CvTextScreens.cpp is not part of the original project (references a missing CvTextMgr.h).
-oc4_add_game_core(CvGameCoreDLL SOURCE_DIR CvGameCoreDLL EXCLUDE CvTextScreens.cpp PUBLIC_HEADERS)
+oc4_add_game_core(CvGameCoreDLL SOURCE_DIR CvGameCoreDLL EXCLUDE CvTextScreens.cpp PUBLIC_HEADERS STANDARD_FOR_SCOPE)
 
 # Profile-guided optimisation of the game core, driven by tools\pgo.cmd: GEN links an
 # instrumented DLL that counts what AI autoplay runs through, USE links the DLL optimised

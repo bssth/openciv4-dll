@@ -1,5 +1,5 @@
 # oc4_add_game_core(<target> SOURCE_DIR <dir> [EXCLUDE <file>...] [DEFINITIONS <def>...]
-#                   [DEF_FILE <file>] [OUTPUT_DIR <dir>] [PUBLIC_HEADERS])
+#                   [DEF_FILE <file>] [OUTPUT_DIR <dir>] [PUBLIC_HEADERS] [STANDARD_FOR_SCOPE])
 #
 # Builds a Civ4 BtS game core (the SDK's CvGameCoreDLL or a mod's derivative of it) for x64
 # against Python 2.7 and the compat layer, as a DLL named CvGameCoreDLL-<arch>.dll (OC4_GAME_CORE_NAME,
@@ -8,7 +8,8 @@
 # SDK headers). DEF_FILE is a module-definition file in x64 mangling, for mods that export
 # the engine's names under other functions (a mod's own .def is 32-bit). With OUTPUT_DIR the
 # DLL lands there instead of the common bin folder, and oc4core.exe is copied next to it so
-# that it runs with that game core.
+# that it runs with that game core. Under MSVC a for loop's variable outlives the loop, as in
+# VC7.1, which mods' sources rely on; STANDARD_FOR_SCOPE is for sources that do not.
 if(CMAKE_CXX_COMPILER_ARCHITECTURE_ID MATCHES "^(ARM64|aarch64)$" OR CMAKE_SYSTEM_PROCESSOR MATCHES "^(ARM64|arm64|aarch64)$")
 	set(OC4_ARCH arm64)
 else()
@@ -17,7 +18,7 @@ endif()
 set(OC4_GAME_CORE_NAME "CvGameCoreDLL-${OC4_ARCH}")
 
 function(oc4_add_game_core target)
-	cmake_parse_arguments(ARG "PUBLIC_HEADERS" "SOURCE_DIR;OUTPUT_DIR;DEF_FILE" "EXCLUDE;DEFINITIONS" ${ARGN})
+	cmake_parse_arguments(ARG "PUBLIC_HEADERS;STANDARD_FOR_SCOPE" "SOURCE_DIR;OUTPUT_DIR;DEF_FILE" "EXCLUDE;DEFINITIONS" ${ARGN})
 	get_filename_component(src "${ARG_SOURCE_DIR}" ABSOLUTE)
 	file(GLOB sources CONFIGURE_DEPENDS "${src}/*.cpp")
 	foreach(f IN LISTS ARG_EXCLUDE)
@@ -53,6 +54,9 @@ function(oc4_add_game_core target)
 		target_compile_options(${target} PRIVATE /permissive /W3 /EHsc /bigobj /MP
 			/source-charset:windows-1252 /execution-charset:windows-1252
 			/wd4244 /wd4267 /wd4305 /wd4800 /wd4996 /wd4251 /wd4018 /wd4805 /wd4838)
+		if(NOT ARG_STANDARD_FOR_SCOPE)
+			target_compile_options(${target} PRIVATE /Zc:forScope-)
+		endif()
 	endif()
 	if(NOT MSVC)
 		# VC7.1-era code: Microsoft extensions, and the SDK's Windows-1252 sources as raw bytes.
