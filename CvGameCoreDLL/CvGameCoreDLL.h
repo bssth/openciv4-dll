@@ -204,7 +204,7 @@ namespace python = boost::python;
 #include "CvDLLPythonIFaceBase.h"
 #include "CvRandom.h"
 #include "CvArea.h"
-#include "CvDllEntity.h"
+#include "CvDLLEntity.h"
 #include "CvDeal.h"
 #include "CvDLLEntityIFaceBase.h"
 #include "CvGame.h"
